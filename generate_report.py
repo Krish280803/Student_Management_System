@@ -149,16 +149,16 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     # =========================================================================
     # PAGE 1: COVER PAGE
     # =========================================================================
-    story.append(Spacer(1, 100))
+    story.append(Spacer(1, 120))
     story.append(Paragraph("STUDENT MANAGEMENT SYSTEM", title_style))
     story.append(Paragraph("Enterprise Student Management System using Spring Boot, JWT Authentication, REST APIs, MySQL and Vanilla JavaScript", subtitle_style))
     story.append(Spacer(1, 80))
     story.append(Paragraph("<b>Author:</b> Srikrishna Kulkarni", metadata_style))
-    story.append(Paragraph("<b>Version:</b> Version 1.0 (Final Release)", metadata_style))
+    story.append(Paragraph("<b>Version:</b> Version 1.0.0 (Initial Release)", metadata_style))
     story.append(Paragraph("<b>Date:</b> July 16, 2026", metadata_style))
     story.append(Spacer(1, 50))
     story.append(Paragraph("<b>GitHub:</b> https://github.com/Krish280803/Student_Management_System", metadata_style))
-    story.append(Paragraph("<b>LinkedIn:</b> https://linkedin.com/in/srikrishna-kulkarni", metadata_style))
+    story.append(Paragraph("<b>LinkedIn:</b> www.linkedin.com/in/sri-krishna-483443243", metadata_style))
     story.append(PageBreak())
 
     # =========================================================================
@@ -350,7 +350,7 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     story.append(Paragraph(
         "Using dynamic agile phases allowed us to systematically build, test, and package features. "
         "Each phase delivered compiling and verified components, culminating in a stable, containerized application "
-        "ready for immediate enterprise staging and deployment.", body_style))
+        "ready for deployment and further enhancements.", body_style))
     story.append(PageBreak())
 
     # =========================================================================
@@ -1099,7 +1099,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
     story.append(Paragraph("<b>Limitations & Future Scope:</b>", h2_style))
     story.append(Paragraph("• <b>Local File Storage:</b> Profile photos are saved directly to a local directory instead of cloud bucket providers like AWS S3.", bullet_style))
-    story.append(Paragraph("• <b>Planned Domain Extensions:</b> Email & SMS grade notifications, QR-code based attendance tracking, a parent grading portal, online fee collections, and native mobile apps.", bullet_style))
+    story.append(Paragraph("• <b>Future Scope:</b> Integration of OAuth2 social sign-on credentials validation and cloud storage mapping migration for document attachments.", bullet_style))
 
     # Build the document
     doc.build(story, canvasmaker=NumberedCanvas)

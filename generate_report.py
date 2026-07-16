@@ -73,8 +73,8 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     subtitle_style = ParagraphStyle(
         'CoverSubtitle',
         fontName='Helvetica',
-        fontSize=14,
-        leading=18,
+        fontSize=12,
+        leading=16,
         textColor=colors.HexColor('#17B890'),
         alignment=1,
         spaceAfter=30
@@ -149,9 +149,9 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     # =========================================================================
     # PAGE 1: COVER PAGE
     # =========================================================================
-    story.append(Spacer(1, 120))
+    story.append(Spacer(1, 100))
     story.append(Paragraph("STUDENT MANAGEMENT SYSTEM", title_style))
-    story.append(Paragraph("Enterprise SaaS Administration & Grading Platform", subtitle_style))
+    story.append(Paragraph("Enterprise Student Management System using Spring Boot, JWT Authentication, REST APIs, MySQL and Vanilla JavaScript", subtitle_style))
     story.append(Spacer(1, 80))
     story.append(Paragraph("<b>Author:</b> Srikrishna Kulkarni", metadata_style))
     story.append(Paragraph("<b>Version:</b> Version 1.0 (Final Release)", metadata_style))
@@ -168,9 +168,9 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     story.append(Spacer(1, 10))
     story.append(Paragraph(
         "This project report documents the design, architecture, and full-stack implementation of the Student Management "
-        "System (SMS), an enterprise SaaS platform engineered to streamline academic administration, teacher directories, "
-        "examination schedules, and student marks processing. Developed as a Single Page Application (SPA) backed by "
-        "a robust Java Spring Boot REST server, the platform emphasizes micro-service scalability, secure JWT authentication, "
+        "System (SMS), a platform engineered using scalable architecture principles to streamline academic administration, "
+        "teacher directories, examination schedules, and student marks processing. Developed as a Single Page Application "
+        "(SPA) backed by a robust Java Spring Boot REST server, the platform emphasizes secure JWT authentication, "
         "data normalization, and responsive user experiences.", body_style))
     
     story.append(Paragraph("<b>Project Sizing & Implementation Metrics:</b>", h2_style))
@@ -215,7 +215,7 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
         ["Chapter 6", "Business Transaction Services & Caching Strategy", "Page 16"],
         ["Chapter 7", "REST API Mappings & Controller Interfaces", "Page 18"],
         ["Chapter 8", "Security Gateway, JWT Filter & Authorization Mappings", "Page 21"],
-        ["Chapter 9", "SaaS Frontend Layout & SPA Fetch Integrations", "Page 24"],
+        ["Chapter 9", "Web Frontend Layout & SPA Fetch Integrations", "Page 24"],
         ["Chapter 10", "Verification, Testing Suite & Quality Assurance", "Page 27"],
         ["Chapter 11", "DevOps Containerization & CI/CD Pipelines", "Page 29"],
         ["Chapter 12", "Conclusion & Project Portfolio Summary", "Page 31"]
@@ -241,9 +241,9 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
         "vulnerabilities in managing registers. Legacy systems are built as monolithic desktop apps, lacking role-based "
         "isolation, remote accessibility, and consolidated document exports.", body_style))
     story.append(Paragraph(
-        "This specification report outlines a standardized Web-based SaaS platform built to address these bottlenecks. "
+        "This specification report outlines a web platform designed using enterprise software architecture principles. "
         "By separating core administrative capabilities (Teacher & Student directories, Course Placements) and "
-        "Academic operations (Exam schedulers, Grades entry ledger), the system delivers high transaction throughput.", body_style))
+        "Academic operations (Exam schedulers, Grades entry ledger), the system delivers robust transaction processing.", body_style))
 
     story.append(Paragraph("<b>Core Software Design Patterns Applied:</b>", h2_style))
     story.append(Paragraph("• <b>Model-View-Controller (MVC):</b> Divides data entities (Model), static resources templates (View), and REST controller logic (Controller) to isolate execution layers.", bullet_style))
@@ -312,8 +312,8 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     story.append(Spacer(1, 10))
     story.append(Paragraph(
         "The primary objective of the Student Management System (SMS) project is to deploy a functional, "
-        "highly responsive portal capable of storing and managing school directories securely. It is designed to act "
-        "as a central system of records for departments, student biodata, faculty details, and grade sheets.", body_style))
+        "highly responsive portal capable of storing and managing school directories securely. It is designed using "
+        "production-oriented design principles to act as a system of records for departments, student biodata, faculty details, and grade sheets.", body_style))
     
     story.append(Paragraph("<b>Currently Implemented Features:</b>", h2_style))
     story.append(Paragraph("• Student & Teacher Directory CRUD operations with automated profile photo uploads.", bullet_style))
@@ -330,7 +330,7 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     story.append(Spacer(1, 5))
     story.append(Paragraph(
         "By clearly separating current releases from future planned capabilities, the platform maintains a clean "
-        "release roadmap that aligns with production deployment sprints while laying a solid codebase foundation.", body_style))
+        "development roadmap that aligns with production-oriented releases while laying a solid codebase foundation.", body_style))
     story.append(PageBreak())
 
     # =========================================================================
@@ -339,7 +339,7 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     story.append(Paragraph("DEVELOPMENT METHODOLOGY", h2_style))
     story.append(Spacer(1, 10))
     story.append(Paragraph(
-        "The project followed an Agile development methodology, divided into 5 major phases (Sprints 0-19):", body_style))
+        "The project followed an Agile development methodology, divided into 5 major development phases:", body_style))
     story.append(Paragraph("1. <b>Database schema design and normalization:</b> Normalizing all tables to 3NF standards.", bullet_style))
     story.append(Paragraph("2. <b>Core API development:</b> Setting up DTOs, mappers, repositories, and transactional services.", bullet_style))
     story.append(Paragraph("3. <b>Security integrations:</b> Enforcing stateless security filters, password hashing, and token encryption.", bullet_style))
@@ -348,8 +348,8 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     
     story.append(Spacer(1, 15))
     story.append(Paragraph(
-        "Using dynamic agile sprints allowed us to systematically build, test, and package features. "
-        "Each sprint delivered compiling and verified components, culminating in a stable, containerized application "
+        "Using dynamic agile phases allowed us to systematically build, test, and package features. "
+        "Each phase delivered compiling and verified components, culminating in a stable, containerized application "
         "ready for immediate enterprise staging and deployment.", body_style))
     story.append(PageBreak())
 
@@ -360,7 +360,7 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     story.append(Spacer(1, 10))
     story.append(Paragraph(
         "Functional requirements detail the explicit actions the system must perform:", body_style))
-    story.append(Paragraph("• <b>User Authentication:</b> Users must log in via a JWT overlay. Tokens expire after 24 hours.", bullet_style))
+    story.append(Paragraph("• <b>User Authentication:</b> Users must log in via a secure JWT login overlay. Tokens expire after 24 hours.", bullet_style))
     story.append(Paragraph("• <b>Student Register:</b> Admins can add students using a 4-step wizard. Fields include registration code, photo uploads, and departments.", bullet_style))
     story.append(Paragraph("• <b>Teacher Directory:</b> Allows administrative management of teacher hires, emails, phones, and department placements.", bullet_style))
     story.append(Paragraph("• <b>Exam Department:</b> Provides scheduling controls (Add Exam, Edit Date, Delete) and a Grade Entry Ledger for markheets input.", bullet_style))
@@ -390,7 +390,7 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     story.append(Paragraph(
         "By enforcing strict non-functional constraints, the platform guarantees high throughput, sub-100ms database search indexing, "
         "fail-safe data recovery mechanisms via soft deletes, and stateless caching, enabling the application to scale efficiently "
-        "to thousands of concurrent active student sessions.", body_style))
+        "for academic portal operations.", body_style))
     story.append(PageBreak())
 
     # =========================================================================
@@ -922,11 +922,11 @@ public class SecurityConfig {
     # =========================================================================
     # PAGE 24: CHAPTER 9 - SAAS FRONTEND LAYOUT
     # =========================================================================
-    story.append(Paragraph("CHAPTER 9: SAAS FRONTEND LAYOUT & SPA INTEGRATION", h1_style))
+    story.append(Paragraph("CHAPTER 9: WEB FRONTEND LAYOUT & SPA INTEGRATION", h1_style))
     story.append(Spacer(1, 10))
     story.append(Paragraph(
         "The user interface is designed as a Single Page Application (SPA) using HTML5, Bootstrap 5 components, and vanilla ES6 "
-        "JavaScript for DOM manipulation and Fetch API requests. Custom CSS creates a dark, glassmorphic SaaS theme.", body_style))
+        "JavaScript for DOM manipulation and Fetch API requests. Custom CSS creates a dark, glassmorphic custom theme.", body_style))
     story.append(Paragraph(
         "Key interface layout modules include:", body_style))
     story.append(Paragraph("• <b>Collapsible Sidebar Menu:</b> Standard navigation across Dashboard, Student Directory, Teacher Directory, and Exam Department.", bullet_style))
@@ -938,7 +938,7 @@ public class SecurityConfig {
     # =========================================================================
     # PAGE 25: EMBEDDED DASHBOARD SCREENSHOT
     # =========================================================================
-    story.append(Paragraph("INTERACTIVE TELEMETRY DASHBOARD", h2_style))
+    story.append(Paragraph("INTERACTIVE MANAGEMENT DASHBOARD", h2_style))
     story.append(Spacer(1, 5))
     story.append(Paragraph(
         "The main dashboard provides real-time telemetry cards and registration analytics charts. Statistics "
@@ -1099,7 +1099,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
     story.append(Paragraph("<b>Limitations & Future Scope:</b>", h2_style))
     story.append(Paragraph("• <b>Local File Storage:</b> Profile photos are saved directly to a local directory instead of cloud bucket providers like AWS S3.", bullet_style))
-    story.append(Paragraph("• <b>Future Scope:</b> Integration of OAuth2 social sign-on credentials validation and cloud storage mapping migration for document attachments.", bullet_style))
+    story.append(Paragraph("• <b>Planned Domain Extensions:</b> Email & SMS grade notifications, QR-code based attendance tracking, a parent grading portal, online fee collections, and native mobile apps.", bullet_style))
 
     # Build the document
     doc.build(story, canvasmaker=NumberedCanvas)

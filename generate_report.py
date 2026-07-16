@@ -158,7 +158,7 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     story.append(Paragraph("<b>Date:</b> July 16, 2026", metadata_style))
     story.append(Spacer(1, 50))
     story.append(Paragraph("<b>GitHub:</b> https://github.com/Krish280803/Student_Management_System", metadata_style))
-    story.append(Paragraph("<b>LinkedIn:</b> www.linkedin.com/in/sri-krishna-483443243", metadata_style))
+    story.append(Paragraph("<b>LinkedIn:</b> https://www.linkedin.com/in/sri-krishna-483443243/", metadata_style))
     story.append(PageBreak())
 
     # =========================================================================

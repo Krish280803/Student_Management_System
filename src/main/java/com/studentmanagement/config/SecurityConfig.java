@@ -34,7 +34,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(authorize -> authorize
                 // Allow static resources
-                .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/favicon.ico", "/uploads/**").permitAll()
+                .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/favicon.ico", "/uploads/**", "/SMS_Architecture_Project_Report.pdf").permitAll()
                 // Allow auth endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 // Allow system health endpoint

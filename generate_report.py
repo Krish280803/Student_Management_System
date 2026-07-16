@@ -151,7 +151,7 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     # =========================================================================
     story.append(Spacer(1, 120))
     story.append(Paragraph("STUDENT MANAGEMENT SYSTEM", title_style))
-    story.append(Paragraph("Enterprise Student Management System using Spring Boot, JWT Authentication, REST APIs, MySQL and Vanilla JavaScript", subtitle_style))
+    story.append(Paragraph("Full-Stack Student Management System using Spring Boot, JWT Authentication, REST APIs, MySQL and Vanilla JavaScript", subtitle_style))
     story.append(Spacer(1, 80))
     story.append(Paragraph("<b>Author:</b> Srikrishna Kulkarni", metadata_style))
     story.append(Paragraph("<b>Version:</b> Version 1.0.0 (Initial Release)", metadata_style))
@@ -1106,4 +1106,5 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
     print("PDF build completed successfully.")
 
 if __name__ == "__main__":
-    build_pdf()
+    doc_path = "SMS_Architecture_Project_Report.pdf"
+    build_pdf(doc_path)

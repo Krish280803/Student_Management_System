@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS - SaaS Administration Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body class="bg-blobs">
+
+    <!-- JWT AUTH LOGIN OVERLAY -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="glass-card login-card text-center p-4 py-5 fade-in-up">
+            <i class="bi bi-mortarboard-fill text-info fs-1 mb-3"></i>
+            <h3 class="text-white mb-2 font-heading">SMS Portal Sign-In</h3>
+            <p class="text-secondary small mb-4">Enter registry credentials to access administration services.</p>
+            
+            <div id="login-error-alert" class="alert alert-danger d-none py-2 fs-7" role="alert"></div>
+
+            <form id="login-form">
+                <div class="custom-form-group text-start mb-3">
+                    <label class="custom-form-label"><i class="bi bi-person me-2"></i>Username</label>
+                    <input type="text" class="custom-form-control" id="login-username" placeholder="e.g. admin" required>
+                </div>
+                <div class="custom-form-group text-start mb-4">
+                    <label class="custom-form-label"><i class="bi bi-key me-2"></i>Password</label>
+                    <input type="password" class="custom-form-control" id="login-password" placeholder="e.g. password" required>
+                </div>
+                <button type="submit" class="btn btn-diagnostic w-100 py-2 d-flex align-items-center justify-content-center gap-2" id="btn-login-submit">
+                    <span class="spinner-border spinner-border-sm d-none" id="login-spinner"></span>
+                    <span>Sign In</span>
+                </button>
+            </form>
+            <div class="mt-4 text-secondary small">
+                <p class="m-0">Demo Logins: <strong>admin</strong> / <strong>password</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="app-wrapper d-none" id="app-wrapper-container">
+        
+        <!-- SIDEBAR -->
+        <aside class="app-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span class="logo-text">
+                    <i class="bi bi-mortarboard-fill text-info me-2 fs-4"></i>SMS Admin
+                </span>
+                <button class="btn-toggle-sidebar d-none d-lg-block" id="btn-collapse-sidebar">
+                    <i class="bi bi-chevron-left" id="collapse-icon"></i>
+                </button>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="menu-item active" data-tab="dashboard">
+                    <a href="#" class="menu-link">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-tab="students-list">
+                    <a href="#" class="menu-link">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Student Directory</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-tab="teachers-list" id="menu-teachers-list">
+                    <a href="#" class="menu-link">
+                        <i class="bi bi-person-badge-fill"></i>
+                        <span>Teacher Directory</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-tab="add-student" id="menu-add-student">
+                    <a href="#" class="menu-link">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span>Add Student</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-tab="faculties-mgmt" id="menu-faculties-mgmt">
+                    <a href="#" class="menu-link">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        <span>Faculty Page</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-tab="diagnostics" id="menu-diagnostics">
+                    <a href="#" class="menu-link">
+                        <i class="bi bi-cpu-fill"></i>
+                        <span>System Status</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer text-center">
+                <span class="text-muted small logo-text" style="font-size: 0.75rem;">v1.0.0 Sprints 8-19</span>
+            </div>
+        </aside>
+
+        <!-- MAIN APP CONTENT -->
+        <main class="app-content">
+            
+            <!-- TOP NAVBAR -->
+            <header class="app-navbar">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-dark d-lg-none btn-sm py-2 px-3 border-secondary" id="btn-mobile-sidebar">
+                        <i class="bi bi-list fs-5 text-white"></i>
+                    </button>
+                    <!-- Unified top search mapped to active directory filtration -->
+                    <div class="navbar-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" placeholder="Search students instantly..." id="nav-global-search">
+                    </div>
+                </div>
+                
+                <div class="navbar-actions">
+                    <!-- Diagnostic Indicator -->
+                    <div class="health-dot-wrapper" id="nav-diagnostic-btn">
+                        <span class="status-indicator up pulse" id="nav-status-dot"></span>
+                        <span class="d-none d-sm-inline">Sys Online</span>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button class="btn-theme-toggle" id="btn-theme-toggle" title="Toggle Theme">
+                        <i class="bi bi-sun-fill" id="theme-icon"></i>
+                    </button>
+
+                    <!-- User Account -->
+                    <div class="dropdown profile-dropdown">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" 
+                             alt="Profile Avatar" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="navbar-avatar">
+                        <ul class="dropdown-menu dropdown-menu-end glass-card p-2 border-secondary" style="background-color: var(--bg-secondary);">
+                            <li><span class="dropdown-item-text fw-bold text-white" id="profile-name-display">Sarah Jenkins</span></li>
+                            <li><span class="dropdown-item-text text-secondary small" id="profile-role-display">Principal Registrar</span></li>
+                            <li><hr class="dropdown-divider border-secondary"></li>
+                            <li><a class="dropdown-item text-secondary hover-blue" href="#" id="profile-menu-details"><i class="bi bi-person me-2"></i>My Profile</a></li>
+                            <li><hr class="dropdown-divider border-secondary"></li>
+                            <li><a class="dropdown-item text-danger" href="#" id="btn-auth-logout"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <!-- MAIN CONTENT PANELS (Tab views) -->
+            <div class="view-container">
+                
+                <!-- VIEW 1: DASHBOARD VIEW -->
+                <div class="view-section active fade-in-up" id="view-dashboard">
+                    <!-- Dashboard Greeting -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Registry Console</h2>
+                            <p class="text-secondary small m-0">Dynamic real-time portal telemetry</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-dark border-secondary d-flex align-items-center gap-2 py-2 px-3" id="btn-dashboard-refresh">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh Metrics
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Grid -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="glass-card stats-card" id="card-stats-students" style="cursor: pointer;">
+                                <div class="stats-icon-wrapper blue">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                                <span class="text-secondary small">Total Students</span>
+                                <h3 class="stats-number text-white mt-1" id="dash-total-students">---</h3>
+                                <span class="stats-trend up"><i class="bi bi-arrow-up-short"></i> Cached DB list</span>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="glass-card stats-card" id="card-stats-faculties" style="cursor: pointer;">
+                                <div class="stats-icon-wrapper purple">
+                                    <i class="bi bi-layers-fill"></i>
+                                </div>
+                                <span class="text-secondary small">Faculties</span>
+                                <h3 class="stats-number text-white mt-1" id="dash-total-depts">---</h3>
+                                <span class="stats-trend text-muted">Core Departments</span>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="glass-card stats-card" id="card-stats-courses" style="cursor: pointer;">
+                                <div class="stats-icon-wrapper teal">
+                                    <i class="bi bi-book-half"></i>
+                                </div>
+                                <span class="text-secondary small">Active Courses</span>
+                                <h3 class="stats-number text-white mt-1">14</h3>
+                                <span class="stats-trend up"><i class="bi bi-arrow-up-short"></i> 4 new sessions</span>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6">
+                            <div class="glass-card stats-card">
+                                <div class="stats-icon-wrapper green">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </div>
+                                <span class="text-secondary small">Database Uptime</span>
+                                <h3 class="stats-number text-white mt-1" id="dash-uptime-text">---</h3>
+                                <span class="stats-trend up"><i class="bi bi-arrow-up-short"></i> Active Health Check</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts & Lists Row -->
+                    <div class="row g-4 mb-4">
+                        <!-- Chart Card -->
+                        <div class="col-lg-7">
+                            <div class="glass-card h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 class="text-white fs-5 m-0">Student Registrations Analytics</h4>
+                                    <span class="badge bg-dark border border-secondary text-secondary">Yearly (2026)</span>
+                                </div>
+                                <div class="mock-chart-container" id="registrations-mock-chart">
+                                    <div class="chart-bar-wrapper"><div class="chart-bar" data-val="65%"></div><div class="chart-label">Jan</div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar" data-val="75%"></div><div class="chart-label">Feb</div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar" data-val="50%"></div><div class="chart-label">Mar</div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar" data-val="85%"></div><div class="chart-label">Apr</div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar" data-val="95%"></div><div class="chart-label">May</div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar" data-val="80%"></div><div class="chart-label">Jun</div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar" data-val="90%"></div><div class="chart-label">Jul</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Activity Feed -->
+                        <div class="col-lg-5">
+                            <div class="glass-card h-100">
+                                <h4 class="text-white fs-5 mb-3">Registry Activity Feed</h4>
+                                <ul class="list-unstyled m-0" id="dashboard-activity-feed">
+                                    <li class="d-flex align-items-start gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-10">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 text-info d-flex"><i class="bi bi-shield-check fs-5"></i></div>
+                                        <div>
+                                            <div class="text-white fw-semibold small">Registry JWT Gateway verified</div>
+                                            <span class="text-secondary small d-block">Admin authentication &bull; Active session</span>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-start gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-10">
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success d-flex"><i class="bi bi-hdd-fill fs-5"></i></div>
+                                        <div>
+                                            <div class="text-white fw-semibold small">JPA Cache Layer Loaded</div>
+                                            <span class="text-secondary small d-block">ConcurrentMap active &bull; Optimized hits</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Registrations Table -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="glass-card">
+                                <h4 class="text-white fs-5 mb-4"><i class="bi bi-clock-history text-info me-2"></i>Latest Registrations</h4>
+                                <div class="custom-table-responsive">
+                                    <table class="custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Student ID</th>
+                                                <th>Email</th>
+                                                <th>Department</th>
+                                                <th>Registration Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dashboard-recent-tbody">
+                                            <!-- Dynamically injected -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: STUDENT DIRECTORY VIEW (Sprint 7) -->
+                <div class="view-section fade-in-up" id="view-students-list">
+                    
+                    <!-- Search and Action Header -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Student Directory</h2>
+                            <p class="text-secondary small m-0" id="directory-count-text">Loading student records...</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <!-- EXPORT ACTIONS (Sprint 16) -->
+                            <div class="dropdown">
+                                <button class="btn btn-dark border-secondary dropdown-toggle d-flex align-items-center gap-2 py-2 px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-download"></i> Export Data
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end glass-card p-2 border-secondary" style="background-color: var(--bg-secondary);">
+                                    <li><a class="dropdown-item text-secondary hover-blue" href="/api/students/export/excel" id="export-excel-btn" target="_blank"><i class="bi bi-file-earmark-excel me-2 text-success"></i>Excel Workbook</a></li>
+                                    <li><a class="dropdown-item text-secondary hover-blue" href="/api/students/export/pdf" id="export-pdf-btn" target="_blank"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>PDF Document</a></li>
+                                    <li><a class="dropdown-item text-secondary hover-blue" href="/api/students/export/csv" id="export-csv-btn" target="_blank"><i class="bi bi-file-earmark-spreadsheet me-2 text-info"></i>CSV Raw File</a></li>
+                                    <li><hr class="dropdown-divider border-secondary"></li>
+                                    <li><a class="dropdown-item text-secondary hover-blue" href="#" id="btn-print-register"><i class="bi bi-printer me-2"></i>Print Ledger</a></li>
+                                </ul>
+                            </div>
+                            <button class="btn btn-dark border-secondary d-flex align-items-center gap-2 py-2 px-3" id="btn-refresh-students">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh List
+                            </button>
+                            <button class="btn btn-diagnostic d-flex align-items-center gap-2 py-2 px-3" id="btn-quick-add-student">
+                                <i class="bi bi-plus-lg"></i> Add Student
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search and Filters Console -->
+                    <div class="glass-card mb-4 py-3 px-3">
+                        <div class="row g-3 align-items-center">
+                            <!-- Search Bar -->
+                            <div class="col-lg-5 col-md-6">
+                                <div class="position-relative">
+                                    <i class="bi bi-search text-muted position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%);"></i>
+                                    <input type="text" class="custom-form-control py-2 ps-5" placeholder="Search by name, code, email, phone..." id="student-search-input">
+                                </div>
+                            </div>
+                            
+                            <!-- Department Filter -->
+                            <div class="col-lg-3 col-md-3 col-sm-6">
+                                <select class="custom-form-control py-2" id="filter-department">
+                                    <option value="ALL">All Departments</option>
+                                    <option value="1">Computer Science & Eng</option>
+                                    <option value="2">Mechanical Engineering</option>
+                                    <option value="3">Business Administration</option>
+                                </select>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="col-lg-2 col-md-3 col-sm-6">
+                                <select class="custom-form-control py-2" id="filter-status">
+                                    <option value="ACTIVE">Active Only</option>
+                                    <option value="DELETED">Soft Deleted</option>
+                                    <option value="ALL">All States</option>
+                                </select>
+                            </div>
+
+                            <div class="col-lg-2 col-12 text-end">
+                                <button class="btn btn-link text-secondary text-decoration-none btn-sm" id="btn-clear-filters">
+                                    <i class="bi bi-x-circle me-1"></i> Clear Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DATA TABLE CARD -->
+                    <div class="glass-card">
+                        
+                        <!-- LOADING SKELETON -->
+                        <div class="custom-table-responsive" id="students-table-skeleton">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 25%;">Student</th>
+                                        <th style="width: 15%;">Student ID</th>
+                                        <th style="width: 20%;">Email</th>
+                                        <th style="width: 15%;">Department</th>
+                                        <th style="width: 10%;">Status</th>
+                                        <th style="width: 15%;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="skeleton-row">
+                                        <td><div class="avatar-cell"><div class="skeleton-bar circle"></div><div class="skeleton-bar title"></div></div></td>
+                                        <td><div class="skeleton-bar text"></div></td>
+                                        <td><div class="skeleton-bar text"></div></td>
+                                        <td><div class="skeleton-bar badge-skele"></div></td>
+                                        <td><div class="skeleton-bar badge-skele"></div></td>
+                                        <td><div class="skeleton-bar text" style="width: 60px;"></div></td>
+                                    </tr>
+                                    <tr class="skeleton-row">
+                                        <td><div class="avatar-cell"><div class="skeleton-bar circle"></div><div class="skeleton-bar title"></div></div></td>
+                                        <td><div class="skeleton-bar text"></div></td>
+                                        <td><div class="skeleton-bar text"></div></td>
+                                        <td><div class="skeleton-bar badge-skele"></div></td>
+                                        <td><div class="skeleton-bar badge-skele"></div></td>
+                                        <td><div class="skeleton-bar text" style="width: 60px;"></div></td>
+                                    </tr>
+                                    <tr class="skeleton-row">
+                                        <td><div class="avatar-cell"><div class="skeleton-bar circle"></div><div class="skeleton-bar title"></div></div></td>
+                                        <td><div class="skeleton-bar text"></div></td>
+                                        <td><div class="skeleton-bar text"></div></td>
+                                        <td><div class="skeleton-bar badge-skele"></div></td>
+                                        <td><div class="skeleton-bar badge-skele"></div></td>
+                                        <td><div class="skeleton-bar text" style="width: 60px;"></div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- ACTUAL DATA TABLE -->
+                        <div class="custom-table-responsive d-none" id="students-table-data">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th class="sort-header" data-sort="name">Student Name <i class="bi bi-arrow-down-up" id="sort-icon-name"></i></th>
+                                        <th class="sort-header" data-sort="id">Student ID <i class="bi bi-arrow-down-up" id="sort-icon-id"></i></th>
+                                        <th>Email</th>
+                                        <th class="sort-header" data-sort="dept">Department <i class="bi bi-arrow-down-up" id="sort-icon-dept"></i></th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="students-directory-tbody">
+                                    <!-- Dynamic rows injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- PAGINATION -->
+                        <div class="pagination-custom" id="directory-pagination">
+                            <span class="text-secondary small" id="pagination-info-text">Showing 0 to 0 of 0 records</span>
+                            <div class="page-numbers" id="pagination-buttons-container">
+                                <!-- Dynamic -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- VIEW 2.5: TEACHER DIRECTORY VIEW -->
+                <div class="view-section fade-in-up" id="view-teachers-list">
+                    <!-- Search and Action Header -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Teacher Directory</h2>
+                            <p class="text-secondary small m-0" id="teacher-directory-count-text">Loading teacher records...</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <div class="dropdown">
+                                <button class="btn btn-dark border-secondary dropdown-toggle d-flex align-items-center gap-2 py-2 px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-download"></i> Export Data
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end glass-card p-2 border-secondary" style="background-color: var(--bg-secondary);">
+                                    <li><a class="dropdown-item text-secondary hover-blue" href="#" id="export-teachers-excel-btn"><i class="bi bi-file-earmark-excel me-2 text-success"></i>Excel Workbook</a></li>
+                                    <li><a class="dropdown-item text-secondary hover-blue" href="#" id="export-teachers-csv-btn"><i class="bi bi-file-earmark-spreadsheet me-2 text-info"></i>CSV Raw File</a></li>
+                                </ul>
+                            </div>
+                            <button class="btn btn-dark border-secondary d-flex align-items-center gap-2 py-2 px-3" id="btn-refresh-teachers">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh List
+                            </button>
+                            <button class="btn btn-diagnostic d-flex align-items-center gap-2 py-2 px-3" id="btn-quick-add-teacher">
+                                <i class="bi bi-plus-lg"></i> Add Teacher
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search and Filters Console -->
+                    <div class="glass-card mb-4 py-3 px-3">
+                        <div class="row g-3 align-items-center">
+                            <!-- Search Bar -->
+                            <div class="col-lg-5 col-md-6">
+                                <div class="position-relative">
+                                    <i class="bi bi-search text-muted position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%);"></i>
+                                    <input type="text" class="custom-form-control py-2 ps-5" placeholder="Search by name, code, email, specialization..." id="teacher-search-input">
+                                </div>
+                            </div>
+                            
+                            <!-- Department Filter -->
+                            <div class="col-lg-3 col-md-3 col-sm-6">
+                                <select class="custom-form-control py-2" id="filter-teacher-department">
+                                    <option value="ALL">All Departments</option>
+                                    <option value="1">Computer Science & Eng</option>
+                                    <option value="2">Mechanical Engineering</option>
+                                    <option value="3">Business Administration</option>
+                                </select>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="col-lg-2 col-md-3 col-sm-6">
+                                <select class="custom-form-control py-2" id="filter-teacher-status">
+                                    <option value="ACTIVE">Active Only</option>
+                                    <option value="DELETED">Soft Deleted</option>
+                                    <option value="ALL">All States</option>
+                                </select>
+                            </div>
+
+                            <div class="col-lg-2 col-12 text-end">
+                                <button class="btn btn-link text-secondary text-decoration-none btn-sm" id="btn-clear-teacher-filters">
+                                    <i class="bi bi-x-circle me-1"></i> Clear Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DATA TABLE CARD -->
+                    <div class="glass-card">
+                        <!-- LOADING SKELETON -->
+                        <div class="custom-table-responsive" id="teachers-table-skeleton">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 25%;">Teacher</th>
+                                        <th style="width: 15%;">Teacher ID</th>
+                                        <th style="width: 20%;">Email</th>
+                                        <th style="width: 15%;">Department</th>
+                                        <th style="width: 15%;">Specialization</th>
+                                        <th style="width: 15%;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="skeleton-row">
+                                        <td><div class="avatar-cell"><div class="skeleton-bar circle"></div><div class="skeleton-bar title"></div></div></td>
+                                        <td><div class="skeleton-bar text"></div></td>
+                                        <td><div class="skeleton-bar text"></div></td>
+                                        <td><div class="skeleton-bar badge-skele"></div></td>
+                                        <td><div class="skeleton-bar text"></div></td>
+                                        <td><div class="skeleton-bar text" style="width: 60px;"></div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- ACTUAL DATA TABLE -->
+                        <div class="custom-table-responsive d-none" id="teachers-table-data">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th class="sort-header" data-sort="name" id="th-teacher-name">Teacher Name <i class="bi bi-arrow-down-up"></i></th>
+                                        <th class="sort-header" data-sort="id" id="th-teacher-id">Teacher ID <i class="bi bi-arrow-down-up"></i></th>
+                                        <th>Email</th>
+                                        <th class="sort-header" data-sort="dept" id="th-teacher-dept">Department <i class="bi bi-arrow-down-up"></i></th>
+                                        <th>Specialization</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teachers-directory-tbody">
+                                    <!-- Injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- PAGINATION -->
+                        <div class="pagination-custom" id="teacher-directory-pagination">
+                            <span class="text-secondary small" id="teacher-pagination-info-text">Showing 0 to 0 of 0 records</span>
+                            <div class="page-numbers" id="teacher-pagination-buttons-container">
+                                <!-- Dynamic -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2.6: ADD TEACHER VIEW -->
+                <div class="view-section fade-in-up" id="view-add-teacher">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Register Teacher</h2>
+                            <p class="text-secondary small m-0">Add a new faculty teacher to the directory</p>
+                        </div>
+                        <button class="btn btn-dark border-secondary px-3 py-2" onclick="switchTab('teachers-list')">
+                            <i class="bi bi-arrow-left me-1"></i> Back to List
+                        </button>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="glass-card p-4">
+                                <form id="add-teacher-form">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">Teacher ID Code</label>
+                                            <input type="text" class="custom-form-control" id="add-tch-number" placeholder="TCH-2026-0001" required>
+                                            <div class="invalid-feedback" id="err-add-tch-number"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">Department</label>
+                                            <select class="custom-form-control" id="add-tch-dept" required>
+                                                <option value="">Select Department</option>
+                                                <option value="1">Computer Science & Eng</option>
+                                                <option value="2">Mechanical Engineering</option>
+                                                <option value="3">Business Administration</option>
+                                            </select>
+                                            <div class="invalid-feedback" id="err-add-tch-dept"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">First Name</label>
+                                            <input type="text" class="custom-form-control" id="add-tch-firstname" placeholder="First Name" required>
+                                            <div class="invalid-feedback" id="err-add-tch-firstname"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">Last Name</label>
+                                            <input type="text" class="custom-form-control" id="add-tch-lastname" placeholder="Last Name" required>
+                                            <div class="invalid-feedback" id="err-add-tch-lastname"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">Email Address</label>
+                                            <input type="email" class="custom-form-control" id="add-tch-email" placeholder="name@university.edu" required>
+                                            <div class="invalid-feedback" id="err-add-tch-email"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">Mobile Phone</label>
+                                            <input type="text" class="custom-form-control" id="add-tch-phone" placeholder="+1-555-0201">
+                                            <div class="invalid-feedback" id="err-add-tch-phone"></div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label text-secondary small">Specialization</label>
+                                            <input type="text" class="custom-form-control" id="add-tch-spec" placeholder="Compiler Design, Electromagnetism...">
+                                            <div class="invalid-feedback" id="err-add-tch-spec"></div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end gap-2 mt-4">
+                                        <button type="button" class="btn btn-dark border-secondary px-4 py-2" onclick="switchTab('teachers-list')">Cancel</button>
+                                        <button type="submit" class="btn btn-diagnostic px-4 py-2 d-flex align-items-center gap-2">
+                                            <span class="spinner-border spinner-border-sm d-none" id="add-tch-spinner"></span>
+                                            <span>Register Teacher</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2.7: EDIT TEACHER VIEW -->
+                <div class="view-section fade-in-up" id="view-edit-teacher">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Edit Teacher Profile</h2>
+                            <p class="text-secondary small m-0">Modify teacher record in database</p>
+                        </div>
+                        <button class="btn btn-dark border-secondary px-3 py-2" onclick="switchTab('teachers-list')">
+                            <i class="bi bi-arrow-left me-1"></i> Back to List
+                        </button>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="glass-card p-4">
+                                <form id="edit-teacher-form">
+                                    <input type="hidden" id="edit-tch-id">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">Teacher ID Code</label>
+                                            <input type="text" class="custom-form-control" id="edit-tch-number" required>
+                                            <div class="invalid-feedback" id="err-edit-tch-number"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">Department</label>
+                                            <select class="custom-form-control" id="edit-tch-dept" required>
+                                                <option value="1">Computer Science & Eng</option>
+                                                <option value="2">Mechanical Engineering</option>
+                                                <option value="3">Business Administration</option>
+                                            </select>
+                                            <div class="invalid-feedback" id="err-edit-tch-dept"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">First Name</label>
+                                            <input type="text" class="custom-form-control" id="edit-tch-firstname" required>
+                                            <div class="invalid-feedback" id="err-edit-tch-firstname"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">Last Name</label>
+                                            <input type="text" class="custom-form-control" id="edit-tch-lastname" required>
+                                            <div class="invalid-feedback" id="err-edit-tch-lastname"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">Email Address</label>
+                                            <input type="email" class="custom-form-control" id="edit-tch-email" required>
+                                            <div class="invalid-feedback" id="err-edit-tch-email"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-secondary small">Mobile Phone</label>
+                                            <input type="text" class="custom-form-control" id="edit-tch-phone">
+                                            <div class="invalid-feedback" id="err-edit-tch-phone"></div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label text-secondary small">Specialization</label>
+                                            <input type="text" class="custom-form-control" id="edit-tch-spec">
+                                            <div class="invalid-feedback" id="err-edit-tch-spec"></div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end gap-2 mt-4">
+                                        <button type="button" class="btn btn-dark border-secondary px-4 py-2" onclick="switchTab('teachers-list')">Cancel</button>
+                                        <button type="submit" class="btn btn-diagnostic px-4 py-2 d-flex align-items-center gap-2">
+                                            <span class="spinner-border spinner-border-sm d-none" id="edit-tch-spinner"></span>
+                                            <span>Save Changes</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2.8: TEACHER DETAILS VIEW -->
+                <div class="view-section fade-in-up" id="view-teacher-details">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Teacher Profile File</h2>
+                            <p class="text-secondary small m-0">Detailed faculty and biography records</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-dark border-secondary px-3 py-2" onclick="switchTab('teachers-list')">
+                                <i class="bi bi-arrow-left me-1"></i> Directory
+                            </button>
+                            <button class="btn btn-diagnostic px-3 py-2" id="btn-teacher-details-edit">
+                                <i class="bi bi-pencil me-1"></i> Edit Profile
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Profile Card -->
+                        <div class="col-lg-4">
+                            <div class="glass-card text-center py-4">
+                                <div class="avatar-details-wrapper mb-3 position-relative d-inline-block">
+                                    <img src="" id="teacher-details-avatar" alt="Teacher Profile Avatar" class="rounded-circle border border-info border-3 p-1" style="width: 120px; height: 120px; object-fit: cover;">
+                                    <input type="file" id="teacher-photo-input" class="d-none" accept="image/*">
+                                    <label for="teacher-photo-input" class="photo-upload-overlay" id="lbl-teacher-photo-upload" style="cursor: pointer; position: absolute; bottom: 0; right: 0; background: var(--accent-blue); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-primary);"><i class="bi bi-camera-fill text-white fs-7"></i></label>
+                                </div>
+                                <h3 class="text-white fs-4 m-0 font-heading" id="teacher-details-name">---</h3>
+                                <span class="badge-custom purple mt-2" id="teacher-details-badge-dept">---</span>
+                                
+                                <hr class="border-secondary border-opacity-20 my-4">
+                                
+                                <div class="text-start px-2">
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-5 text-secondary small">Faculty Code:</div>
+                                        <div class="col-7 text-white fw-bold"><code class="text-info" id="teacher-details-id-code">---</code></div>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-5 text-secondary small">Status:</div>
+                                        <div class="col-7" id="teacher-details-status-badge">---</div>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-5 text-secondary small">Joined Date:</div>
+                                        <div class="col-7 text-white small" id="teacher-details-joined-date">---</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bio & Specialization Grid -->
+                        <div class="col-lg-8">
+                            <div class="glass-card mb-4">
+                                <h4 class="text-white fs-5 mb-3 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-telephone text-info me-2"></i>Contact Details</h4>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <span class="text-secondary small d-block">Primary Email</span>
+                                        <span class="text-white fw-semibold" id="teacher-details-email">---</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="text-secondary small d-block">Mobile Phone</span>
+                                        <span class="text-white fw-semibold" id="teacher-details-phone">---</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="text-secondary small d-block">Specialization</span>
+                                        <span class="text-white fw-semibold" id="teacher-details-spec">---</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="text-secondary small d-block">Department Location</span>
+                                        <span class="text-white fw-semibold" id="teacher-details-dept-name">---</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: ADD STUDENT VIEW (Sprint 8 Multi-Step Form) -->
+                <div class="view-section fade-in-up" id="view-add-student">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Register Student</h2>
+                            <p class="text-secondary small m-0">Complete the multi-step enrollment form</p>
+                        </div>
+                        <button class="btn btn-dark border-secondary px-3 py-2" onclick="document.querySelector('[data-tab=\'students-list\']').click()">
+                            <i class="bi bi-arrow-left me-1"></i> Back to List
+                        </button>
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-xl-8 col-lg-10">
+                            <!-- Form Steps Progress Bar -->
+                            <div class="glass-card mb-4">
+                                <div class="step-progress-bar-container">
+                                    <div class="step-progress-fill" id="add-step-progress-bar" style="width: 25%;"></div>
+                                    <div class="step-nodes-row">
+                                        <div class="step-node active" id="node-step-1">1<span class="step-node-label">Personal</span></div>
+                                        <div class="step-node" id="node-step-2">2<span class="step-node-label">Contact</span></div>
+                                        <div class="step-node" id="node-step-3">3<span class="step-node-label">Academic</span></div>
+                                        <div class="step-node" id="node-step-4">4<span class="step-node-label">Upload</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Contents Box -->
+                            <div class="glass-card p-4">
+                                <form id="add-student-form">
+                                    
+                                    <!-- STEP 1: Personal Details -->
+                                    <div class="form-step-section active" id="add-step-1-content">
+                                        <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-person me-2 text-info"></i>Personal Information</h4>
+                                        <div class="row g-3">
+                                            <div class="col-md-6 custom-form-group">
+                                                <label class="custom-form-label">First Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="custom-form-control" id="add-first-name" placeholder="John" required>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-first-name"></div>
+                                            </div>
+                                            <div class="col-md-6 custom-form-group">
+                                                <label class="custom-form-label">Last Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="custom-form-control" id="add-last-name" placeholder="Doe" required>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-last-name"></div>
+                                            </div>
+                                            <div class="col-md-12 custom-form-group">
+                                                <label class="custom-form-label">Date of Birth <span class="text-danger">*</span></label>
+                                                <input type="date" class="custom-form-control" id="add-dob" required>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-dob"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- STEP 2: Contact Details -->
+                                    <div class="form-step-section" id="add-step-2-content">
+                                        <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-telephone me-2 text-info"></i>Contact Details</h4>
+                                        <div class="row g-3">
+                                            <div class="col-md-12 custom-form-group">
+                                                <label class="custom-form-label">Email Address <span class="text-danger">*</span></label>
+                                                <input type="email" class="custom-form-control" id="add-email" placeholder="john.doe@university.edu" required>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-email"></div>
+                                            </div>
+                                            <div class="col-md-12 custom-form-group">
+                                                <label class="custom-form-label">Phone Number</label>
+                                                <input type="tel" class="custom-form-control" id="add-phone" placeholder="+1-555-0100">
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-phone"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- STEP 3: Academic Details -->
+                                    <div class="form-step-section" id="add-step-3-content">
+                                        <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-journal-bookmark me-2 text-info"></i>Academic Affiliation</h4>
+                                        <div class="row g-3">
+                                            <div class="col-md-12 custom-form-group">
+                                                <label class="custom-form-label">Registration Code <span class="text-danger">*</span></label>
+                                                <input type="text" class="custom-form-control" id="add-student-number" placeholder="STD-2026-XXXX" required>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-student-number"></div>
+                                            </div>
+                                            <div class="col-md-12 custom-form-group">
+                                                <label class="custom-form-label">Faculty Department <span class="text-danger">*</span></label>
+                                                <select class="custom-form-control" id="add-department" required>
+                                                    <option value="" disabled selected>Select Department</option>
+                                                    <option value="1">Computer Science & Engineering</option>
+                                                    <option value="2">Mechanical Engineering</option>
+                                                    <option value="3">Business Administration</option>
+                                                </select>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-department"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- STEP 4: Photo upload UI (Sprint 15) -->
+                                    <div class="form-step-section" id="add-step-4-content">
+                                        <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-camera me-2 text-info"></i>Student Profile Image</h4>
+                                        <div class="row g-3 justify-content-center text-center">
+                                            <div class="col-md-8">
+                                                <div class="photo-upload-container p-4 border border-dashed rounded-3 border-secondary border-opacity-50">
+                                                    <div class="avatar-preview-wrapper mb-3">
+                                                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150" 
+                                                             id="add-avatar-preview" alt="Avatar Preview" class="rounded-circle border border-dark" style="width: 110px; height: 110px; object-fit: cover;">
+                                                    </div>
+                                                    <div class="custom-form-group mb-3">
+                                                        <input type="file" id="add-photo-file" accept="image/*" class="d-none">
+                                                        <button type="button" class="btn btn-dark border-secondary btn-sm" onclick="document.getElementById('add-photo-file').click()">
+                                                            <i class="bi bi-upload me-2"></i> Choose Profile Photo
+                                                        </button>
+                                                        <span class="text-muted d-block small mt-2" id="add-file-name-label">No file selected (Supports JPG, PNG &lt; 2MB)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step Navigation Controls -->
+                                    <div class="d-flex justify-content-between mt-5 pt-3 border-top border-secondary border-opacity-10">
+                                        <button type="button" class="btn btn-dark border-secondary py-2 px-4" id="btn-add-step-prev" disabled>
+                                            <i class="bi bi-chevron-left me-1"></i> Previous
+                                        </button>
+                                        <button type="button" class="btn btn-diagnostic py-2 px-4 d-flex align-items-center gap-2" id="btn-add-step-next">
+                                            <span>Next</span> <i class="bi bi-chevron-right ms-1" id="btn-add-step-icon"></i>
+                                        </button>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 4: EDIT STUDENT VIEW (Sprint 9) -->
+                <div class="view-section fade-in-up" id="view-edit-student">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Modify Profile</h2>
+                            <p class="text-secondary small m-0" id="edit-subtitle-text">Update registry details</p>
+                        </div>
+                        <button class="btn btn-dark border-secondary px-3 py-2" id="btn-edit-back">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </button>
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-xl-8 col-lg-10">
+                            <div class="glass-card p-4">
+                                <form id="edit-student-form">
+                                    <input type="hidden" id="edit-student-id">
+                                    
+                                    <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-pencil-square me-2 text-info"></i>Student Information Details</h4>
+                                    
+                                    <!-- Photo Editor strip (Sprint 15) -->
+                                    <div class="row mb-4 align-items-center bg-dark bg-opacity-20 p-3 rounded-3 g-3">
+                                        <div class="col-md-2 text-center text-md-start">
+                                            <img src="" id="edit-avatar-preview" alt="Avatar" class="rounded-circle border border-secondary" style="width: 75px; height: 75px; object-fit: cover;">
+                                        </div>
+                                        <div class="col-md-6 text-center text-md-start">
+                                            <h5 class="text-white m-0 fs-6">Profile Photo</h5>
+                                            <span class="text-muted small">Update picture instantly (Max 2MB)</span>
+                                        </div>
+                                        <div class="col-md-4 text-center text-md-end">
+                                            <input type="file" id="edit-photo-file" accept="image/*" class="d-none">
+                                            <button type="button" class="btn btn-dark border-secondary btn-sm" onclick="document.getElementById('edit-photo-file').click()">
+                                                <i class="bi bi-arrow-repeat me-1"></i> Change Image
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-md-6 custom-form-group">
+                                            <label class="custom-form-label">First Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="custom-form-control" id="edit-first-name" required>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-first-name"></div>
+                                        </div>
+                                        <div class="col-md-6 custom-form-group">
+                                            <label class="custom-form-label">Last Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="custom-form-control" id="edit-last-name" required>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-last-name"></div>
+                                        </div>
+                                        <div class="col-md-6 custom-form-group">
+                                            <label class="custom-form-label">Registration Code <span class="text-danger">*</span></label>
+                                            <input type="text" class="custom-form-control" id="edit-student-number" required>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-student-number"></div>
+                                        </div>
+                                        <div class="col-md-6 custom-form-group">
+                                            <label class="custom-form-label">Date of Birth <span class="text-danger">*</span></label>
+                                            <input type="date" class="custom-form-control" id="edit-dob" required>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-dob"></div>
+                                        </div>
+                                        <div class="col-md-12 custom-form-group">
+                                            <label class="custom-form-label">Email Address <span class="text-danger">*</span></label>
+                                            <input type="email" class="custom-form-control" id="edit-email" required>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-email"></div>
+                                        </div>
+                                        <div class="col-md-6 custom-form-group">
+                                            <label class="custom-form-label">Phone Number</label>
+                                            <input type="tel" class="custom-form-control" id="edit-phone">
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-phone"></div>
+                                        </div>
+                                        <div class="col-md-6 custom-form-group">
+                                            <label class="custom-form-label">Department Faculty <span class="text-danger">*</span></label>
+                                            <select class="custom-form-control" id="edit-department" required>
+                                                <option value="1">Computer Science & Engineering</option>
+                                                <option value="2">Mechanical Engineering</option>
+                                                <option value="3">Business Administration</option>
+                                            </select>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-department"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Submit controls -->
+                                    <div class="d-flex justify-content-end gap-2 mt-5 pt-3 border-top border-secondary border-opacity-10">
+                                        <button type="button" class="btn btn-dark border-secondary py-2 px-4" id="btn-edit-cancel">Cancel</button>
+                                        <button type="submit" class="btn btn-diagnostic py-2 px-4" id="btn-edit-save">
+                                            <span class="spinner-border spinner-border-sm d-none" id="edit-save-spinner"></span>
+                                            <span>Save Changes</span>
+                                        </button>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 5: STUDENT DETAILS VIEW (Sprint 10) -->
+                <div class="view-section fade-in-up" id="view-student-details">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Student Profile File</h2>
+                            <p class="text-secondary small m-0">Detailed academic and registration records</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-dark border-secondary px-3 py-2" id="btn-details-back">
+                                <i class="bi bi-arrow-left me-1"></i> Directory
+                            </button>
+                            <button class="btn btn-diagnostic px-3 py-2" id="btn-details-edit">
+                                <i class="bi bi-pencil me-1"></i> Edit Profile
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Profile Card -->
+                        <div class="col-lg-4">
+                            <div class="glass-card text-center py-4">
+                                <div class="avatar-details-wrapper mb-3 position-relative d-inline-block">
+                                    <img src="" id="details-avatar" alt="Student Profile Avatar" class="rounded-circle border border-info border-3 p-1" style="width: 120px; height: 120px; object-fit: cover;">
+                                </div>
+                                <h3 class="text-white fs-4 m-0 font-heading" id="details-name">---</h3>
+                                <span class="badge-custom blue mt-2" id="details-badge-dept">---</span>
+                                
+                                <hr class="border-secondary border-opacity-20 my-4">
+                                
+                                <div class="text-start px-2">
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-5 text-secondary small">Registration Code:</div>
+                                        <div class="col-7 text-white fw-bold"><code class="text-info" id="details-id-code">---</code></div>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-5 text-secondary small">Status:</div>
+                                        <div class="col-7" id="details-status-badge">---</div>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-5 text-secondary small">Date Registered:</div>
+                                        <div class="col-7 text-white small" id="details-joined-date">---</div>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-5 text-secondary small">Last Updated:</div>
+                                        <div class="col-7 text-muted small" id="details-updated-date">---</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bio & Academics Grid -->
+                        <div class="col-lg-8">
+                            
+                            <!-- Contact details -->
+                            <div class="glass-card mb-4">
+                                <h4 class="text-white fs-5 mb-3 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-telephone text-info me-2"></i>Contact Details</h4>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <span class="text-secondary small d-block">Primary Email</span>
+                                        <span class="text-white fw-semibold" id="details-email">---</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="text-secondary small d-block">Mobile Phone</span>
+                                        <span class="text-white fw-semibold" id="details-phone">---</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="text-secondary small d-block">Date of Birth</span>
+                                        <span class="text-white fw-semibold" id="details-dob">---</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="text-secondary small d-block">Faculty Affiliation</span>
+                                        <span class="text-white fw-semibold" id="details-dept-name">---</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Course Enrollments Timeline (Mocked list mapped from DB setup) -->
+                            <div class="glass-card">
+                                <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-journal-bookmark text-purple me-2"></i>Course Enrollments & Timeline</h4>
+                                <div class="timeline-container" id="details-enrollments-timeline">
+                                    <!-- Populated dynamically via JS -->
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 5.5: FACULTIES MANAGEMENT VIEW (Admin Faculty Page) -->
+                <div class="view-section fade-in-up" id="view-faculties-mgmt">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Faculty Console</h2>
+                            <p class="text-secondary small m-0">Administrative management of department registries</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4" id="faculties-mgmt-container">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- VIEW 6: DIAGNOSTICS VIEW (Verification) -->
+                <div class="view-section fade-in-up" id="view-diagnostics">
+                    <div class="row g-4">
+                        <div class="col-lg-6">
+                            <h3 class="mb-4 text-info d-flex align-items-center">
+                                <i class="bi bi-cpu me-2"></i> System Diagnostics Check
+                            </h3>
+                            <div class="glass-card mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h4 class="m-0 text-white fs-5">Active Metrics</h4>
+                                    <div class="spinner-border spinner-border-sm text-info d-none" role="status" id="diagnostics-loader">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                                <table class="table-custom-metrics">
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="text-white fw-semibold">Application</span></td>
+                                            <td class="text-end text-secondary">student-management</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="text-white fw-semibold">Database Status</span></td>
+                                            <td class="text-end" id="db-status-text">Checking...</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="text-white fw-semibold">Database Server</span></td>
+                                            <td class="text-end text-secondary small" id="db-details-text">Checking...</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="text-white fw-semibold">JVM Version</span></td>
+                                            <td class="text-end text-secondary" id="jvm-version-text">Checking...</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="text-white fw-semibold">Process Uptime</span></td>
+                                            <td class="text-end text-secondary" id="uptime-text">Checking...</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="text-white fw-semibold">Last Checked</span></td>
+                                            <td class="text-end text-muted small" id="last-check-time">Checking...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button class="btn btn-diagnostic w-100 mt-4" id="btn-run-diagnostics">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Trigger Diagnostic Scan
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Arch Layout Diagram -->
+                        <div class="col-lg-6">
+                            <h3 class="mb-4 text-purple d-flex align-items-center">
+                                <i class="bi bi-diagram-3-fill me-2"></i> Architecture Flow
+                            </h3>
+                            <div class="glass-card">
+                                <p class="text-secondary small mb-4">Unidirectional clean architecture layers:</p>
+                                <div class="arch-flow mb-3">
+                                    <div class="arch-node"><div class="text-info fw-bold small">Controller</div><span class="text-muted" style="font-size: 0.7rem;">Web REST</span></div>
+                                    <i class="bi bi-arrow-right-short arch-arrow"></i>
+                                    <div class="arch-node"><div class="text-teal fw-bold small">Service</div><span class="text-muted" style="font-size: 0.7rem;">Transactions</span></div>
+                                    <i class="bi bi-arrow-right-short arch-arrow"></i>
+                                    <div class="arch-node"><div class="text-purple fw-bold small">Repository</div><span class="text-muted" style="font-size: 0.7rem;">Spring JPA</span></div>
+                                    <i class="bi bi-arrow-right-short arch-arrow"></i>
+                                    <div class="arch-node"><div class="text-success fw-bold small">Database</div><span class="text-muted" style="font-size: 0.7rem;">MySQL</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- FOOTER -->
+            <footer class="py-4 border-top border-secondary border-opacity-10 text-center text-secondary small">
+                <p class="m-0">Student Management System &bull; Clean Architecture &bull; Designed by Antigravity</p>
+                <p class="mt-1 text-muted">Powered by Spring Boot 3.3.1 | Hibernate 6 | MySQL | Java 21</p>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- DYNAMIC LIST DIALOG MODAL -->
+    <div id="info-modal-overlay" class="login-overlay d-none" style="z-index: 1050;">
+        <div class="glass-card p-4 py-4 fade-in-up" style="max-width: 600px; width: 90%;">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary border-opacity-10 pb-2">
+                <h3 class="text-white mb-0 font-heading" id="info-modal-title" style="font-size: 1.25rem;">Registry Details</h3>
+                <button class="btn btn-dark border-secondary btn-sm py-1 px-2" id="btn-close-info-modal">
+                    <i class="bi bi-x fs-5 text-white"></i>
+                </button>
+            </div>
+            <div id="info-modal-body-content" style="max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">
+                <!-- Injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- GLOBAL TOAST FLOATING CONTAINER -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div id="sms-live-toast" class="toast align-items-center text-white border-0 glass-card" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i class="" id="toast-icon"></i>
+                    <span id="toast-message-text">Message placeholder</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/js/app.js"></script>
+</body>
+</html>

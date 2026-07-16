@@ -5,6 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "teachers")
 @SQLRestriction("is_deleted = false")
@@ -35,8 +37,8 @@ public class Teacher extends BaseAuditEntity {
     @Column(name = "phone", length = 20)
     private String phone;
 
-    @Column(name = "specialization", length = 100)
-    private String specialization;
+    @Column(name = "hire_date", nullable = false)
+    private LocalDate hireDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)

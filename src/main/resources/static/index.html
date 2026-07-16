@@ -72,9 +72,9 @@
                         <span>Student Directory</span>
                     </a>
                 </li>
-                <li class="menu-item" data-tab="teachers-list" id="menu-teachers-list">
+                <li class="menu-item" data-tab="teachers-list">
                     <a href="#" class="menu-link">
-                        <i class="bi bi-person-badge-fill"></i>
+                        <i class="bi bi-person-workspace"></i>
                         <span>Teacher Directory</span>
                     </a>
                 </li>
@@ -82,6 +82,18 @@
                     <a href="#" class="menu-link">
                         <i class="bi bi-person-plus-fill"></i>
                         <span>Add Student</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-tab="add-teacher" id="menu-add-teacher">
+                    <a href="#" class="menu-link">
+                        <i class="bi bi-person-fill-add"></i>
+                        <span>Add Teacher</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-tab="exam-dept" id="menu-exam-dept">
+                    <a href="#" class="menu-link">
+                        <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+                        <span>Exam Department</span>
                     </a>
                 </li>
                 <li class="menu-item" data-tab="faculties-mgmt" id="menu-faculties-mgmt">
@@ -425,344 +437,6 @@
                     </div>
                 </div>
 
-                <!-- VIEW 2.5: TEACHER DIRECTORY VIEW -->
-                <div class="view-section fade-in-up" id="view-teachers-list">
-                    <!-- Search and Action Header -->
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-                        <div>
-                            <h2 class="mb-1 text-white">Teacher Directory</h2>
-                            <p class="text-secondary small m-0" id="teacher-directory-count-text">Loading teacher records...</p>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <div class="dropdown">
-                                <button class="btn btn-dark border-secondary dropdown-toggle d-flex align-items-center gap-2 py-2 px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-download"></i> Export Data
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end glass-card p-2 border-secondary" style="background-color: var(--bg-secondary);">
-                                    <li><a class="dropdown-item text-secondary hover-blue" href="#" id="export-teachers-excel-btn"><i class="bi bi-file-earmark-excel me-2 text-success"></i>Excel Workbook</a></li>
-                                    <li><a class="dropdown-item text-secondary hover-blue" href="#" id="export-teachers-csv-btn"><i class="bi bi-file-earmark-spreadsheet me-2 text-info"></i>CSV Raw File</a></li>
-                                </ul>
-                            </div>
-                            <button class="btn btn-dark border-secondary d-flex align-items-center gap-2 py-2 px-3" id="btn-refresh-teachers">
-                                <i class="bi bi-arrow-clockwise"></i> Refresh List
-                            </button>
-                            <button class="btn btn-diagnostic d-flex align-items-center gap-2 py-2 px-3" id="btn-quick-add-teacher">
-                                <i class="bi bi-plus-lg"></i> Add Teacher
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Search and Filters Console -->
-                    <div class="glass-card mb-4 py-3 px-3">
-                        <div class="row g-3 align-items-center">
-                            <!-- Search Bar -->
-                            <div class="col-lg-5 col-md-6">
-                                <div class="position-relative">
-                                    <i class="bi bi-search text-muted position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%);"></i>
-                                    <input type="text" class="custom-form-control py-2 ps-5" placeholder="Search by name, code, email, specialization..." id="teacher-search-input">
-                                </div>
-                            </div>
-                            
-                            <!-- Department Filter -->
-                            <div class="col-lg-3 col-md-3 col-sm-6">
-                                <select class="custom-form-control py-2" id="filter-teacher-department">
-                                    <option value="ALL">All Departments</option>
-                                    <option value="1">Computer Science & Eng</option>
-                                    <option value="2">Mechanical Engineering</option>
-                                    <option value="3">Business Administration</option>
-                                </select>
-                            </div>
-
-                            <!-- Status Filter -->
-                            <div class="col-lg-2 col-md-3 col-sm-6">
-                                <select class="custom-form-control py-2" id="filter-teacher-status">
-                                    <option value="ACTIVE">Active Only</option>
-                                    <option value="DELETED">Soft Deleted</option>
-                                    <option value="ALL">All States</option>
-                                </select>
-                            </div>
-
-                            <div class="col-lg-2 col-12 text-end">
-                                <button class="btn btn-link text-secondary text-decoration-none btn-sm" id="btn-clear-teacher-filters">
-                                    <i class="bi bi-x-circle me-1"></i> Clear Filters
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- DATA TABLE CARD -->
-                    <div class="glass-card">
-                        <!-- LOADING SKELETON -->
-                        <div class="custom-table-responsive" id="teachers-table-skeleton">
-                            <table class="custom-table">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 25%;">Teacher</th>
-                                        <th style="width: 15%;">Teacher ID</th>
-                                        <th style="width: 20%;">Email</th>
-                                        <th style="width: 15%;">Department</th>
-                                        <th style="width: 15%;">Specialization</th>
-                                        <th style="width: 15%;">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="skeleton-row">
-                                        <td><div class="avatar-cell"><div class="skeleton-bar circle"></div><div class="skeleton-bar title"></div></div></td>
-                                        <td><div class="skeleton-bar text"></div></td>
-                                        <td><div class="skeleton-bar text"></div></td>
-                                        <td><div class="skeleton-bar badge-skele"></div></td>
-                                        <td><div class="skeleton-bar text"></div></td>
-                                        <td><div class="skeleton-bar text" style="width: 60px;"></div></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- ACTUAL DATA TABLE -->
-                        <div class="custom-table-responsive d-none" id="teachers-table-data">
-                            <table class="custom-table">
-                                <thead>
-                                    <tr>
-                                        <th class="sort-header" data-sort="name" id="th-teacher-name">Teacher Name <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sort-header" data-sort="id" id="th-teacher-id">Teacher ID <i class="bi bi-arrow-down-up"></i></th>
-                                        <th>Email</th>
-                                        <th class="sort-header" data-sort="dept" id="th-teacher-dept">Department <i class="bi bi-arrow-down-up"></i></th>
-                                        <th>Specialization</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="teachers-directory-tbody">
-                                    <!-- Injected via JS -->
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- PAGINATION -->
-                        <div class="pagination-custom" id="teacher-directory-pagination">
-                            <span class="text-secondary small" id="teacher-pagination-info-text">Showing 0 to 0 of 0 records</span>
-                            <div class="page-numbers" id="teacher-pagination-buttons-container">
-                                <!-- Dynamic -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- VIEW 2.6: ADD TEACHER VIEW -->
-                <div class="view-section fade-in-up" id="view-add-teacher">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h2 class="mb-1 text-white">Register Teacher</h2>
-                            <p class="text-secondary small m-0">Add a new faculty teacher to the directory</p>
-                        </div>
-                        <button class="btn btn-dark border-secondary px-3 py-2" onclick="switchTab('teachers-list')">
-                            <i class="bi bi-arrow-left me-1"></i> Back to List
-                        </button>
-                    </div>
-                    <div class="row justify-content-center">
-                        <div class="col-lg-8">
-                            <div class="glass-card p-4">
-                                <form id="add-teacher-form">
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">Teacher ID Code</label>
-                                            <input type="text" class="custom-form-control" id="add-tch-number" placeholder="TCH-2026-0001" required>
-                                            <div class="invalid-feedback" id="err-add-tch-number"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">Department</label>
-                                            <select class="custom-form-control" id="add-tch-dept" required>
-                                                <option value="">Select Department</option>
-                                                <option value="1">Computer Science & Eng</option>
-                                                <option value="2">Mechanical Engineering</option>
-                                                <option value="3">Business Administration</option>
-                                            </select>
-                                            <div class="invalid-feedback" id="err-add-tch-dept"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">First Name</label>
-                                            <input type="text" class="custom-form-control" id="add-tch-firstname" placeholder="First Name" required>
-                                            <div class="invalid-feedback" id="err-add-tch-firstname"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">Last Name</label>
-                                            <input type="text" class="custom-form-control" id="add-tch-lastname" placeholder="Last Name" required>
-                                            <div class="invalid-feedback" id="err-add-tch-lastname"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">Email Address</label>
-                                            <input type="email" class="custom-form-control" id="add-tch-email" placeholder="name@university.edu" required>
-                                            <div class="invalid-feedback" id="err-add-tch-email"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">Mobile Phone</label>
-                                            <input type="text" class="custom-form-control" id="add-tch-phone" placeholder="+1-555-0201">
-                                            <div class="invalid-feedback" id="err-add-tch-phone"></div>
-                                        </div>
-                                        <div class="col-12">
-                                            <label class="form-label text-secondary small">Specialization</label>
-                                            <input type="text" class="custom-form-control" id="add-tch-spec" placeholder="Compiler Design, Electromagnetism...">
-                                            <div class="invalid-feedback" id="err-add-tch-spec"></div>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex justify-content-end gap-2 mt-4">
-                                        <button type="button" class="btn btn-dark border-secondary px-4 py-2" onclick="switchTab('teachers-list')">Cancel</button>
-                                        <button type="submit" class="btn btn-diagnostic px-4 py-2 d-flex align-items-center gap-2">
-                                            <span class="spinner-border spinner-border-sm d-none" id="add-tch-spinner"></span>
-                                            <span>Register Teacher</span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- VIEW 2.7: EDIT TEACHER VIEW -->
-                <div class="view-section fade-in-up" id="view-edit-teacher">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h2 class="mb-1 text-white">Edit Teacher Profile</h2>
-                            <p class="text-secondary small m-0">Modify teacher record in database</p>
-                        </div>
-                        <button class="btn btn-dark border-secondary px-3 py-2" onclick="switchTab('teachers-list')">
-                            <i class="bi bi-arrow-left me-1"></i> Back to List
-                        </button>
-                    </div>
-                    <div class="row justify-content-center">
-                        <div class="col-lg-8">
-                            <div class="glass-card p-4">
-                                <form id="edit-teacher-form">
-                                    <input type="hidden" id="edit-tch-id">
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">Teacher ID Code</label>
-                                            <input type="text" class="custom-form-control" id="edit-tch-number" required>
-                                            <div class="invalid-feedback" id="err-edit-tch-number"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">Department</label>
-                                            <select class="custom-form-control" id="edit-tch-dept" required>
-                                                <option value="1">Computer Science & Eng</option>
-                                                <option value="2">Mechanical Engineering</option>
-                                                <option value="3">Business Administration</option>
-                                            </select>
-                                            <div class="invalid-feedback" id="err-edit-tch-dept"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">First Name</label>
-                                            <input type="text" class="custom-form-control" id="edit-tch-firstname" required>
-                                            <div class="invalid-feedback" id="err-edit-tch-firstname"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">Last Name</label>
-                                            <input type="text" class="custom-form-control" id="edit-tch-lastname" required>
-                                            <div class="invalid-feedback" id="err-edit-tch-lastname"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">Email Address</label>
-                                            <input type="email" class="custom-form-control" id="edit-tch-email" required>
-                                            <div class="invalid-feedback" id="err-edit-tch-email"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label text-secondary small">Mobile Phone</label>
-                                            <input type="text" class="custom-form-control" id="edit-tch-phone">
-                                            <div class="invalid-feedback" id="err-edit-tch-phone"></div>
-                                        </div>
-                                        <div class="col-12">
-                                            <label class="form-label text-secondary small">Specialization</label>
-                                            <input type="text" class="custom-form-control" id="edit-tch-spec">
-                                            <div class="invalid-feedback" id="err-edit-tch-spec"></div>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex justify-content-end gap-2 mt-4">
-                                        <button type="button" class="btn btn-dark border-secondary px-4 py-2" onclick="switchTab('teachers-list')">Cancel</button>
-                                        <button type="submit" class="btn btn-diagnostic px-4 py-2 d-flex align-items-center gap-2">
-                                            <span class="spinner-border spinner-border-sm d-none" id="edit-tch-spinner"></span>
-                                            <span>Save Changes</span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- VIEW 2.8: TEACHER DETAILS VIEW -->
-                <div class="view-section fade-in-up" id="view-teacher-details">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h2 class="mb-1 text-white">Teacher Profile File</h2>
-                            <p class="text-secondary small m-0">Detailed faculty and biography records</p>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-dark border-secondary px-3 py-2" onclick="switchTab('teachers-list')">
-                                <i class="bi bi-arrow-left me-1"></i> Directory
-                            </button>
-                            <button class="btn btn-diagnostic px-3 py-2" id="btn-teacher-details-edit">
-                                <i class="bi bi-pencil me-1"></i> Edit Profile
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="row g-4">
-                        <!-- Profile Card -->
-                        <div class="col-lg-4">
-                            <div class="glass-card text-center py-4">
-                                <div class="avatar-details-wrapper mb-3 position-relative d-inline-block">
-                                    <img src="" id="teacher-details-avatar" alt="Teacher Profile Avatar" class="rounded-circle border border-info border-3 p-1" style="width: 120px; height: 120px; object-fit: cover;">
-                                    <input type="file" id="teacher-photo-input" class="d-none" accept="image/*">
-                                    <label for="teacher-photo-input" class="photo-upload-overlay" id="lbl-teacher-photo-upload" style="cursor: pointer; position: absolute; bottom: 0; right: 0; background: var(--accent-blue); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-primary);"><i class="bi bi-camera-fill text-white fs-7"></i></label>
-                                </div>
-                                <h3 class="text-white fs-4 m-0 font-heading" id="teacher-details-name">---</h3>
-                                <span class="badge-custom purple mt-2" id="teacher-details-badge-dept">---</span>
-                                
-                                <hr class="border-secondary border-opacity-20 my-4">
-                                
-                                <div class="text-start px-2">
-                                    <div class="row g-2 mb-3">
-                                        <div class="col-5 text-secondary small">Faculty Code:</div>
-                                        <div class="col-7 text-white fw-bold"><code class="text-info" id="teacher-details-id-code">---</code></div>
-                                    </div>
-                                    <div class="row g-2 mb-3">
-                                        <div class="col-5 text-secondary small">Status:</div>
-                                        <div class="col-7" id="teacher-details-status-badge">---</div>
-                                    </div>
-                                    <div class="row g-2 mb-3">
-                                        <div class="col-5 text-secondary small">Joined Date:</div>
-                                        <div class="col-7 text-white small" id="teacher-details-joined-date">---</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Bio & Specialization Grid -->
-                        <div class="col-lg-8">
-                            <div class="glass-card mb-4">
-                                <h4 class="text-white fs-5 mb-3 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-telephone text-info me-2"></i>Contact Details</h4>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <span class="text-secondary small d-block">Primary Email</span>
-                                        <span class="text-white fw-semibold" id="teacher-details-email">---</span>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <span class="text-secondary small d-block">Mobile Phone</span>
-                                        <span class="text-white fw-semibold" id="teacher-details-phone">---</span>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <span class="text-secondary small d-block">Specialization</span>
-                                        <span class="text-white fw-semibold" id="teacher-details-spec">---</span>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <span class="text-secondary small d-block">Department Location</span>
-                                        <span class="text-white fw-semibold" id="teacher-details-dept-name">---</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- VIEW 3: ADD STUDENT VIEW (Sprint 8 Multi-Step Form) -->
                 <div class="view-section fade-in-up" id="view-add-student">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -998,6 +672,9 @@
                             <button class="btn btn-dark border-secondary px-3 py-2" id="btn-details-back">
                                 <i class="bi bi-arrow-left me-1"></i> Directory
                             </button>
+                            <button class="btn btn-dark border-secondary px-3 py-2 text-danger" id="btn-download-marksheet-pdf">
+                                <i class="bi bi-file-earmark-pdf-fill me-1"></i> Marksheet PDF
+                            </button>
                             <button class="btn btn-diagnostic px-3 py-2" id="btn-details-edit">
                                 <i class="bi bi-pencil me-1"></i> Edit Profile
                             </button>
@@ -1063,6 +740,26 @@
                                 </div>
                             </div>
 
+                            <!-- Exam Marksheet Ledger -->
+                            <div class="glass-card mb-4" id="details-marksheet-card">
+                                <h4 class="text-white fs-5 mb-3 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-file-earmark-spreadsheet text-info me-2"></i>Exam Academic Marksheet</h4>
+                                <div class="custom-table-responsive">
+                                    <table class="custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Exam Name</th>
+                                                <th>Course Name</th>
+                                                <th>Marks Obtained</th>
+                                                <th>Grade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="details-marksheet-tbody">
+                                            <!-- Dynamically populated -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                             <!-- Dynamic Course Enrollments Timeline (Mocked list mapped from DB setup) -->
                             <div class="glass-card">
                                 <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-journal-bookmark text-purple me-2"></i>Course Enrollments & Timeline</h4>
@@ -1071,6 +768,562 @@
                                 </div>
                             </div>
 
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2.5: TEACHER DIRECTORY VIEW -->
+                <div class="view-section fade-in-up" id="view-teachers-list">
+                    <!-- Search and Action Header -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Teacher Directory</h2>
+                            <p class="text-secondary small m-0" id="teacher-directory-count-text">Loading teacher records...</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <div class="dropdown">
+                                <button class="btn btn-dark border-secondary dropdown-toggle d-flex align-items-center gap-2 py-2 px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-download"></i> Export Data
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end glass-card p-2 border-secondary" style="background-color: var(--bg-secondary);">
+                                    <li><a class="dropdown-item text-secondary hover-blue" href="/api/teachers/export/excel" id="export-teacher-excel-btn" target="_blank"><i class="bi bi-file-earmark-excel me-2 text-success"></i>Excel Workbook</a></li>
+                                    <li><a class="dropdown-item text-secondary hover-blue" href="/api/teachers/export/pdf" id="export-teacher-pdf-btn" target="_blank"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>PDF Document</a></li>
+                                    <li><a class="dropdown-item text-secondary hover-blue" href="/api/teachers/export/csv" id="export-teacher-csv-btn" target="_blank"><i class="bi bi-file-earmark-spreadsheet me-2 text-info"></i>CSV Raw File</a></li>
+                                </ul>
+                            </div>
+                            <button class="btn btn-dark border-secondary d-flex align-items-center gap-2 py-2 px-3" id="btn-refresh-teachers">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh List
+                            </button>
+                            <button class="btn btn-diagnostic d-flex align-items-center gap-2 py-2 px-3" id="btn-quick-add-teacher">
+                                <i class="bi bi-plus-lg"></i> Add Teacher
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search and Filters Console -->
+                    <div class="glass-card mb-4 py-3 px-3">
+                        <div class="row g-3 align-items-center">
+                            <!-- Search Bar -->
+                            <div class="col-lg-5 col-md-6">
+                                <div class="position-relative">
+                                    <i class="bi bi-search text-muted position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%);"></i>
+                                    <input type="text" class="custom-form-control py-2 ps-5" placeholder="Search by name, code, email, phone..." id="teacher-search-input">
+                                </div>
+                            </div>
+                            
+                            <!-- Department Filter -->
+                            <div class="col-lg-3 col-md-3 col-sm-6">
+                                <select class="custom-form-control py-2" id="teacher-filter-department">
+                                    <option value="ALL">All Departments</option>
+                                    <option value="1">Computer Science & Eng</option>
+                                    <option value="2">Mechanical Engineering</option>
+                                    <option value="3">Business Administration</option>
+                                </select>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="col-lg-2 col-md-3 col-sm-6">
+                                <select class="custom-form-control py-2" id="teacher-filter-status">
+                                    <option value="ACTIVE">Active Only</option>
+                                    <option value="DELETED">Soft Deleted</option>
+                                    <option value="ALL">All States</option>
+                                </select>
+                            </div>
+
+                            <div class="col-lg-2 col-12 text-end">
+                                <button class="btn btn-link text-secondary text-decoration-none btn-sm" id="btn-teacher-clear-filters">
+                                    <i class="bi bi-x-circle me-1"></i> Clear Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DATA TABLE CARD -->
+                    <div class="glass-card">
+                        <!-- Loading Skeleton -->
+                        <div class="p-4" id="teachers-table-skeleton">
+                            <div class="placeholder-glow">
+                                <div class="placeholder col-12 py-3 mb-2 rounded-2"></div>
+                                <div class="placeholder col-12 py-3 mb-2 rounded-2"></div>
+                                <div class="placeholder col-12 py-3 mb-2 rounded-2"></div>
+                                <div class="placeholder col-12 py-3 mb-2 rounded-2"></div>
+                            </div>
+                        </div>
+
+                        <!-- ACTUAL DATA TABLE -->
+                        <div class="custom-table-responsive d-none" id="teachers-table-data">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th class="sort-header" data-sort="name" id="th-teacher-name">Teacher Name <i class="bi bi-arrow-down-up" id="sort-icon-teacher-name"></i></th>
+                                        <th class="sort-header" data-sort="id" id="th-teacher-id">Teacher ID <i class="bi bi-arrow-down-up" id="sort-icon-teacher-id"></i></th>
+                                        <th>Email</th>
+                                        <th class="sort-header" data-sort="dept" id="th-teacher-dept">Department <i class="bi bi-arrow-down-up" id="sort-icon-teacher-dept"></i></th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teachers-directory-tbody">
+                                    <!-- Dynamic rows injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- PAGINATION -->
+                        <div class="pagination-custom" id="teacher-directory-pagination">
+                            <span class="text-secondary small" id="teacher-pagination-info-text">Showing 0 to 0 of 0 records</span>
+                            <div class="page-numbers" id="teacher-pagination-buttons-container">
+                                <!-- Dynamic -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 3.5: ADD TEACHER VIEW (Multi-Step Form) -->
+                <div class="view-section fade-in-up" id="view-add-teacher">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Register Teacher</h2>
+                            <p class="text-secondary small m-0">Complete the multi-step teacher profile form</p>
+                        </div>
+                        <button class="btn btn-dark border-secondary px-3 py-2" onclick="document.querySelector('[data-tab=\'teachers-list\']').click()">
+                            <i class="bi bi-arrow-left me-1"></i> Back to List
+                        </button>
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-xl-8 col-lg-10">
+                            <!-- Form Steps Progress Bar -->
+                            <div class="glass-card mb-4">
+                                <div class="step-progress-bar-container">
+                                    <div class="step-progress-fill" id="add-teacher-step-progress-bar" style="width: 25%;"></div>
+                                    <div class="step-nodes-row">
+                                        <div class="step-node active" id="node-teacher-step-1">1<span class="step-node-label">Personal</span></div>
+                                        <div class="step-node" id="node-teacher-step-2">2<span class="step-node-label">Contact</span></div>
+                                        <div class="step-node" id="node-teacher-step-3">3<span class="step-node-label">Academic</span></div>
+                                        <div class="step-node" id="node-teacher-step-4">4<span class="step-node-label">Upload</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Contents Box -->
+                            <div class="glass-card p-4">
+                                <form id="add-teacher-form">
+                                    
+                                    <!-- STEP 1: Personal Details -->
+                                    <div class="form-step-section active" id="add-teacher-step-1-content">
+                                        <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-person me-2 text-info"></i>Personal Information</h4>
+                                        <div class="row g-3">
+                                            <div class="col-md-6 custom-form-group">
+                                                <label class="custom-form-label">First Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="custom-form-control" id="add-teacher-first-name" placeholder="Alan" required>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-teacher-first-name"></div>
+                                            </div>
+                                            <div class="col-md-6 custom-form-group">
+                                                <label class="custom-form-label">Last Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="custom-form-control" id="add-teacher-last-name" placeholder="Turing" required>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-teacher-last-name"></div>
+                                            </div>
+                                            <div class="col-md-12 custom-form-group">
+                                                <label class="custom-form-label">Hire Date <span class="text-danger">*</span></label>
+                                                <input type="date" class="custom-form-control" id="add-teacher-hire-date" required>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-teacher-hire-date"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- STEP 2: Contact Details -->
+                                    <div class="form-step-section" id="add-teacher-step-2-content">
+                                        <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-telephone me-2 text-info"></i>Contact Details</h4>
+                                        <div class="row g-3">
+                                            <div class="col-md-12 custom-form-group">
+                                                <label class="custom-form-label">Primary Email Address <span class="text-danger">*</span></label>
+                                                <input type="email" class="custom-form-control" id="add-teacher-email" placeholder="alan.turing@university.edu" required>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-teacher-email"></div>
+                                            </div>
+                                            <div class="col-md-12 custom-form-group">
+                                                <label class="custom-form-label">Mobile/Phone Number</label>
+                                                <input type="tel" class="custom-form-control" id="add-teacher-phone" placeholder="+1-555-0201">
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-teacher-phone"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- STEP 3: Academic/Faculty Details -->
+                                    <div class="form-step-section" id="add-teacher-step-3-content">
+                                        <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-mortarboard me-2 text-info"></i>Academic Placement</h4>
+                                        <div class="row g-3">
+                                            <div class="col-md-12 custom-form-group">
+                                                <label class="custom-form-label">Teacher Registration Code <span class="text-danger">*</span></label>
+                                                <input type="text" class="custom-form-control" id="add-teacher-number" placeholder="TCH-2026-0001" required>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-teacher-number"></div>
+                                            </div>
+                                            <div class="col-md-12 custom-form-group">
+                                                <label class="custom-form-label">Department Placement <span class="text-danger">*</span></label>
+                                                <select class="custom-form-control" id="add-teacher-dept" required>
+                                                    <option value="" disabled selected>Select Department</option>
+                                                    <option value="1">Computer Science & Engineering</option>
+                                                    <option value="2">Mechanical Engineering</option>
+                                                    <option value="3">Business Administration</option>
+                                                </select>
+                                                <div class="invalid-feedback text-danger fs-8 mt-1" id="err-add-teacher-dept"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- STEP 4: Profile Image Upload -->
+                                    <div class="form-step-section" id="add-teacher-step-4-content">
+                                        <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-image me-2 text-info"></i>Profile Image (Optional)</h4>
+                                        <div class="photo-upload-container text-center py-4 px-2">
+                                            <i class="bi bi-cloud-arrow-up text-info fs-1 d-block mb-2"></i>
+                                            <span class="text-white fw-semibold small d-block">Drag & drop profile picture or click to select</span>
+                                            <span class="text-muted fs-8 d-block mb-3">Accepts JPG, PNG, GIF up to 2MB</span>
+                                            <input type="file" id="add-teacher-photo-file" accept="image/*" class="d-none">
+                                            <button type="button" class="btn btn-dark border-secondary btn-sm" onclick="document.getElementById('add-teacher-photo-file').click()">
+                                                Select File
+                                            </button>
+                                            <span class="text-info small fw-semibold d-block mt-2 d-none" id="add-teacher-photo-filename"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step Navigation Buttons -->
+                                    <div class="d-flex justify-content-between mt-4 pt-3 border-top border-secondary border-opacity-10">
+                                        <button type="button" class="btn btn-dark border-secondary py-2 px-4" id="btn-add-teacher-step-prev" disabled>
+                                            <i class="bi bi-chevron-left me-1"></i> Previous
+                                        </button>
+                                        <button type="button" class="btn btn-diagnostic py-2 px-4 d-flex align-items-center gap-2" id="btn-add-teacher-step-next">
+                                            <span>Next</span> <i class="bi bi-chevron-right ms-1" id="btn-add-teacher-step-icon"></i>
+                                        </button>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 4.5: EDIT TEACHER VIEW -->
+                <div class="view-section fade-in-up" id="view-edit-teacher">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Modify Profile</h2>
+                            <p class="text-secondary small m-0" id="edit-teacher-subtitle-text">Update registry details</p>
+                        </div>
+                        <button class="btn btn-dark border-secondary px-3 py-2" id="btn-edit-teacher-back">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </button>
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-xl-8 col-lg-10">
+                            <div class="glass-card p-4">
+                                <form id="edit-teacher-form">
+                                    <input type="hidden" id="edit-teacher-id">
+                                    
+                                    <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-pencil-square me-2 text-info"></i>Teacher Information Details</h4>
+                                    
+                                    <!-- Photo Editor strip -->
+                                    <div class="row mb-4 align-items-center bg-dark bg-opacity-20 p-3 rounded-3 g-3">
+                                        <div class="col-md-2 text-center text-md-start">
+                                            <img src="" id="edit-teacher-avatar-preview" alt="Avatar" class="rounded-circle border border-secondary" style="width: 75px; height: 75px; object-fit: cover;">
+                                        </div>
+                                        <div class="col-md-6 text-center text-md-start">
+                                            <h5 class="text-white m-0 fs-6">Profile Photo</h5>
+                                            <span class="text-muted small">Update picture instantly (Max 2MB)</span>
+                                        </div>
+                                        <div class="col-md-4 text-center text-md-end">
+                                            <input type="file" id="edit-teacher-photo-file" accept="image/*" class="d-none">
+                                            <button type="button" class="btn btn-dark border-secondary btn-sm" onclick="document.getElementById('edit-teacher-photo-file').click()">
+                                                <i class="bi bi-arrow-repeat me-1"></i> Change Image
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-md-6 custom-form-group">
+                                            <label class="custom-form-label">First Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="custom-form-control" id="edit-teacher-first-name" required>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-teacher-first-name"></div>
+                                        </div>
+                                        <div class="col-md-6 custom-form-group">
+                                            <label class="custom-form-label">Last Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="custom-form-control" id="edit-teacher-last-name" required>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-teacher-last-name"></div>
+                                        </div>
+                                        <div class="col-md-6 custom-form-group">
+                                            <label class="custom-form-label">Teacher Number <span class="text-danger">*</span></label>
+                                            <input type="text" class="custom-form-control" id="edit-teacher-number" required>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-teacher-number"></div>
+                                        </div>
+                                        <div class="col-md-6 custom-form-group">
+                                            <label class="custom-form-label">Department Placement <span class="text-danger">*</span></label>
+                                            <select class="custom-form-control" id="edit-teacher-dept" required>
+                                                <option value="1">Computer Science & Engineering</option>
+                                                <option value="2">Mechanical Engineering</option>
+                                                <option value="3">Business Administration</option>
+                                            </select>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-teacher-dept"></div>
+                                        </div>
+                                        <div class="col-md-12 custom-form-group">
+                                            <label class="custom-form-label">Hire Date <span class="text-danger">*</span></label>
+                                            <input type="date" class="custom-form-control" id="edit-teacher-hire-date" required>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-teacher-hire-date"></div>
+                                        </div>
+                                        <div class="col-md-12 custom-form-group">
+                                            <label class="custom-form-label">Email Address <span class="text-danger">*</span></label>
+                                            <input type="email" class="custom-form-control" id="edit-teacher-email" required>
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-teacher-email"></div>
+                                        </div>
+                                        <div class="col-md-12 custom-form-group">
+                                            <label class="custom-form-label">Mobile/Phone Number</label>
+                                            <input type="text" class="custom-form-control" id="edit-teacher-phone">
+                                            <div class="invalid-feedback text-danger fs-8 mt-1" id="err-edit-teacher-phone"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top border-secondary border-opacity-10">
+                                        <button type="button" class="btn btn-dark border-secondary py-2 px-4" id="btn-edit-teacher-cancel">
+                                            Cancel
+                                        </button>
+                                        <button type="submit" class="btn btn-diagnostic py-2 px-4 d-flex align-items-center gap-2">
+                                            <span class="spinner-border spinner-border-sm d-none" id="edit-teacher-spinner" role="status"></span>
+                                            <span>Save Changes</span>
+                                        </button>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 5.2: TEACHER DETAILS VIEW -->
+                <div class="view-section fade-in-up" id="view-teacher-details">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Teacher Profile File</h2>
+                            <p class="text-secondary small m-0">Detailed faculty and departmental records</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-dark border-secondary px-3 py-2" id="btn-teacher-details-back">
+                                <i class="bi bi-arrow-left me-1"></i> Directory
+                            </button>
+                            <button class="btn btn-diagnostic px-3 py-2" id="btn-teacher-details-edit">
+                                <i class="bi bi-pencil me-1"></i> Edit Profile
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Profile Card -->
+                        <div class="col-lg-4">
+                            <div class="glass-card text-center py-4">
+                                <div class="avatar-details-wrapper mb-3 position-relative d-inline-block">
+                                    <img src="" id="teacher-details-avatar" alt="Teacher Profile Avatar" class="rounded-circle border border-info border-3 p-1" style="width: 120px; height: 120px; object-fit: cover;">
+                                </div>
+                                <h3 class="text-white fs-4 m-0 font-heading" id="teacher-details-name">---</h3>
+                                <span class="badge-custom purple mt-2" id="teacher-details-badge-dept">---</span>
+                                
+                                <hr class="border-secondary border-opacity-20 my-4">
+                                
+                                <div class="text-start px-2">
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-5 text-secondary small">Faculty ID:</div>
+                                        <div class="col-7 text-white fw-bold"><code class="text-info" id="teacher-details-id-code">---</code></div>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-5 text-secondary small">Status:</div>
+                                        <div class="col-7" id="teacher-details-status-badge">---</div>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-5 text-secondary small">Hire Date:</div>
+                                        <div class="col-7 text-white small" id="teacher-details-joined-date">---</div>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-5 text-secondary small">Last Updated:</div>
+                                        <div class="col-7 text-muted small" id="teacher-details-updated-date">---</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bio & Academics Grid -->
+                        <div class="col-lg-8">
+                            <div class="glass-card mb-4">
+                                <h4 class="text-white fs-5 mb-3 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-telephone text-info me-2"></i>Contact Details</h4>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <span class="text-secondary small d-block">Office Email</span>
+                                        <span class="text-white fw-semibold" id="teacher-details-email">---</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="text-secondary small d-block">Mobile Phone</span>
+                                        <span class="text-white fw-semibold" id="teacher-details-phone">---</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="text-secondary small d-block">Department Placement</span>
+                                        <span class="text-white fw-semibold" id="teacher-details-dept-name">---</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="glass-card">
+                                <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2"><i class="bi bi-journal-check text-purple me-2"></i>Faculty Assignment Timeline</h4>
+                                <div class="timeline-container">
+                                    <div class="timeline-item completed">
+                                        <div class="timeline-dot"></div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-title">Assigned Syllabus Lead</div>
+                                            <div class="timeline-meta">Under academic committee evaluation</div>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item active">
+                                        <div class="timeline-dot"></div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-title">Faculty Onboarding & Registry Active</div>
+                                            <div class="timeline-meta">Completed credential verification</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 5.3: EXAM DEPARTMENT VIEW -->
+                <div class="view-section fade-in-up" id="view-exam-dept">
+                    <!-- Search and Action Header -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+                        <div>
+                            <h2 class="mb-1 text-white">Exam Department Console</h2>
+                            <p class="text-secondary small m-0">Schedule examinations and record student academic grades</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-dark border-secondary active py-2 px-3 exam-pane-tab-btn" data-pane="schedule">
+                                <i class="bi bi-calendar-event me-1"></i> Exam Schedule
+                            </button>
+                            <button class="btn btn-dark border-secondary py-2 px-3 exam-pane-tab-btn" data-pane="grades" id="tab-exam-grades">
+                                <i class="bi bi-journal-bookmark me-1"></i> Grade Entry Ledger
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PANE 1: EXAM SCHEDULE -->
+                    <div class="exam-pane-content" id="exam-pane-schedule">
+                        <!-- Add Exam form wrapper -->
+                        <div class="glass-card mb-4 p-4 d-none" id="exam-form-container">
+                            <h4 class="text-white fs-5 mb-4 border-bottom border-secondary border-opacity-10 pb-2" id="exam-form-title">
+                                <i class="bi bi-plus-circle me-2 text-info"></i>Schedule New Exam
+                            </h4>
+                            <form id="exam-schedule-form">
+                                <input type="hidden" id="form-exam-id">
+                                <div class="row g-3">
+                                    <div class="col-md-6 custom-form-group">
+                                        <label class="custom-form-label">Exam Name/Title <span class="text-danger">*</span></label>
+                                        <input type="text" class="custom-form-control" id="form-exam-name" placeholder="Midterm Assessment" required>
+                                    </div>
+                                    <div class="col-md-6 custom-form-group">
+                                        <label class="custom-form-label">Course Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="custom-form-control" id="form-exam-course" placeholder="Introduction to Java Programming" required>
+                                    </div>
+                                    <div class="col-md-4 custom-form-group">
+                                        <label class="custom-form-label">Exam Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="custom-form-control" id="form-exam-date" required>
+                                    </div>
+                                    <div class="col-md-4 custom-form-group">
+                                        <label class="custom-form-label">Room/Lab <span class="text-danger">*</span></label>
+                                        <input type="text" class="custom-form-control" id="form-exam-room" placeholder="Lab 3" required>
+                                    </div>
+                                    <div class="col-md-4 custom-form-group">
+                                        <label class="custom-form-label">Max Marks <span class="text-danger">*</span></label>
+                                        <input type="number" class="custom-form-control" id="form-exam-max-marks" placeholder="100" min="1" required>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top border-secondary border-opacity-10">
+                                    <button type="button" class="btn btn-dark border-secondary py-2 px-4" id="btn-cancel-exam-form">Cancel</button>
+                                    <button type="submit" class="btn btn-diagnostic py-2 px-4">Save Exam Schedule</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Schedule Directory -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="text-white fs-5 m-0">Scheduled Examination Events</h3>
+                            <button class="btn btn-diagnostic btn-sm d-flex align-items-center gap-1 py-2 px-3" id="btn-show-add-exam">
+                                <i class="bi bi-plus-lg"></i> Schedule Exam
+                            </button>
+                        </div>
+
+                        <div class="glass-card">
+                            <div class="custom-table-responsive">
+                                <table class="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Exam Name</th>
+                                            <th>Course Name</th>
+                                            <th>Date</th>
+                                            <th>Location</th>
+                                            <th>Max Marks</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="exam-schedule-tbody">
+                                        <!-- Dynamic entries -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PANE 2: GRADE ENTRY LEDGER -->
+                    <div class="exam-pane-content d-none" id="exam-pane-grades">
+                        <div class="glass-card mb-4 p-3">
+                            <div class="row align-items-center g-3">
+                                <div class="col-md-6 custom-form-group m-0">
+                                    <label class="custom-form-label mb-1">Select Scheduled Exam <span class="text-danger">*</span></label>
+                                    <select class="custom-form-control" id="grade-exam-select">
+                                        <option value="" disabled selected>-- Select Exam --</option>
+                                        <!-- Dynamic options -->
+                                    </select>
+                                </div>
+                                <div class="col-md-6 text-md-end pt-3">
+                                    <span class="text-secondary small">Grades autosave to local registry after confirmation</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-4 d-none" id="grade-entry-ledger-container">
+                            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary border-opacity-10">
+                                <div>
+                                    <h4 class="text-white m-0 fs-5" id="ledger-title-text">Grade Sheets</h4>
+                                    <p class="text-muted small m-0" id="ledger-subtitle-text">Max Marks: 100</p>
+                                </div>
+                                <button class="btn btn-diagnostic py-2 px-4" id="btn-save-ledger">
+                                    <i class="bi bi-save me-1"></i> Save Grade Sheet
+                                </button>
+                            </div>
+
+                            <div class="custom-table-responsive">
+                                <table class="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Student Registration</th>
+                                            <th>Student Name</th>
+                                            <th style="width: 200px;">Marks Obtained</th>
+                                            <th style="width: 120px;">Grade Code</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="exam-grades-tbody">
+                                        <!-- Dynamic list of students -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="glass-card text-center py-5" id="grade-ledger-empty-state">
+                            <i class="bi bi-journal-x fs-1 text-secondary mb-3 d-block"></i>
+                            <h4 class="text-white fs-6">No Exam Selected</h4>
+                            <p class="text-muted small max-w-sm mx-auto">Please select a scheduled exam from the dropdown list to record or update grades.</p>
                         </div>
                     </div>
                 </div>

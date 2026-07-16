@@ -42,13 +42,15 @@ public class SecurityConfig {
                 // Allow swagger documentation paths
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 
-                // Secure write/delete endpoints for students & teachers (Admin only)
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/students/**", "/api/teachers/**").hasRole("ADMIN")
-                .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/students/**", "/api/teachers/**").hasRole("ADMIN")
-                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/students/**", "/api/teachers/**").hasRole("ADMIN")
+                // Read-only access for students & admins
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/students/**").hasAnyRole("STUDENT", "ADMIN")
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/teachers/**").hasAnyRole("STUDENT", "ADMIN")
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/exams/**").hasAnyRole("STUDENT", "ADMIN")
                 
-                // Allow GET requests for students & teachers to all authenticated users
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/students/**", "/api/teachers/**").authenticated()
+                // Mutations require admin rights
+                .requestMatchers("/api/students/**").hasRole("ADMIN")
+                .requestMatchers("/api/teachers/**").hasRole("ADMIN")
+                .requestMatchers("/api/exams/**").hasRole("ADMIN")
                 
                 // Secure all other APIs
                 .anyRequest().authenticated()

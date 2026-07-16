@@ -7,6 +7,8 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS enrollments;
+DROP TABLE IF EXISTS exam_results;
+DROP TABLE IF EXISTS exams;
 DROP TABLE IF EXISTS courses;
 DROP TABLE IF EXISTS students;
 DROP TABLE IF EXISTS teachers;
@@ -100,7 +102,7 @@ CREATE TABLE students (
 
 -- ============================================================================
 -- Table: teachers
--- Purpose: Holds teacher biography, specialization, contact data, and department link
+-- Purpose: Holds teacher bio records, contact metadata, hire date, and department link
 -- ============================================================================
 CREATE TABLE teachers (
     id BIGINT AUTO_INCREMENT,
@@ -109,9 +111,9 @@ CREATE TABLE teachers (
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
     phone VARCHAR(20) NULL,
-    specialization VARCHAR(100) NULL,
+    hire_date DATE NOT NULL,
     department_id BIGINT NOT NULL,
-    photo_path VARCHAR(255) NULL,
+    photo_path VARCHAR(255) NULL, -- Photo storage support
     
     -- Soft Delete Support
     is_deleted TINYINT(1) NOT NULL DEFAULT 0,
@@ -201,6 +203,10 @@ CREATE INDEX idx_users_username ON users (username);
 CREATE INDEX idx_students_last_name ON students (last_name);
 CREATE INDEX idx_students_department_id ON students (department_id);
 
+-- Teachers Table Indexes
+CREATE INDEX idx_teachers_last_name ON teachers (last_name);
+CREATE INDEX idx_teachers_department_id ON teachers (department_id);
+
 -- Courses Table Indexes
 CREATE INDEX idx_courses_department_id ON courses (department_id);
 
@@ -209,6 +215,60 @@ CREATE INDEX idx_enrollments_student_id ON enrollments (student_id);
 CREATE INDEX idx_enrollments_course_id ON enrollments (course_id);
 CREATE INDEX idx_enrollments_status ON enrollments (status);
 
--- Teachers Table Indexes
-CREATE INDEX idx_teachers_last_name ON teachers (last_name);
-CREATE INDEX idx_teachers_department_id ON teachers (department_id);
+-- ============================================================================
+-- Table: exams
+-- Purpose: Stores scheduled exams
+-- ============================================================================
+CREATE TABLE exams (
+    id BIGINT AUTO_INCREMENT,
+    exam_name VARCHAR(100) NOT NULL,
+    course_name VARCHAR(100) NOT NULL,
+    exam_date DATE NOT NULL,
+    room VARCHAR(50) NOT NULL,
+    max_marks INT NOT NULL DEFAULT 100,
+    
+    -- Soft Delete Support
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    
+    -- Enterprise Audit Columns
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(50) NOT NULL DEFAULT 'SYSTEM',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by VARCHAR(50) NOT NULL DEFAULT 'SYSTEM',
+    
+    CONSTRAINT pk_exams PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- Table: exam_results
+-- Purpose: Stores student marks and grades for exams
+-- ============================================================================
+CREATE TABLE exam_results (
+    id BIGINT AUTO_INCREMENT,
+    exam_id BIGINT NOT NULL,
+    student_id BIGINT NOT NULL,
+    marks_obtained DOUBLE NOT NULL,
+    grade VARCHAR(5) NOT NULL,
+    
+    -- Soft Delete Support
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    
+    -- Enterprise Audit Columns
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(50) NOT NULL DEFAULT 'SYSTEM',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by VARCHAR(50) NOT NULL DEFAULT 'SYSTEM',
+    
+    CONSTRAINT pk_exam_results PRIMARY KEY (id),
+    CONSTRAINT fk_exam_results_exams FOREIGN KEY (exam_id) 
+        REFERENCES exams (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_exam_results_students FOREIGN KEY (student_id) 
+        REFERENCES students (id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Indexes for Exam Department Tables
+CREATE INDEX idx_exams_exam_date ON exams (exam_date);
+CREATE INDEX idx_exam_results_exam_id ON exam_results (exam_id);
+CREATE INDEX idx_exam_results_student_id ON exam_results (student_id);

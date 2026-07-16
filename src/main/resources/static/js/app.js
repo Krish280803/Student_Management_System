@@ -6,6 +6,7 @@ const STATE = {
     username: null,
     role: null,
     students: [],      // Local cache of students fetched from backend
+    teachers: [],      // Local cache of teachers
     departments: {
         1: "Computer Science & Eng",
         2: "Mechanical Engineering",
@@ -19,9 +20,25 @@ const STATE = {
         sortOrder: 'asc',
         filterDept: 'ALL',
         filterStatus: 'ACTIVE',
-        searchQuery: ''
+        searchQuery: '',
+        adminAccess: true
     },
-    addStudentStep: 1
+    directoryTeachers: {
+        currentPage: 1,
+        pageSize: 5,
+        sortField: 'name',
+        sortOrder: 'asc',
+        filterDept: 'ALL',
+        filterStatus: 'ACTIVE',
+        searchQuery: '',
+        adminAccess: true
+    },
+    addStudentStep: 1,
+    addTeacherStep: 1,
+    addTeacherPhotoData: null,
+    exams: [],
+    currentExamIdForLedger: null,
+    currentExamMaxMarks: 100
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -95,25 +112,39 @@ function checkAuth() {
 
         // Role-based visibility controls (Sprints 14/19 Admin vs Student separation)
         const menuAdd = document.getElementById('menu-add-student');
+        const menuAddTeacher = document.getElementById('menu-add-teacher');
+        const menuExamDept = document.getElementById('menu-exam-dept');
         const menuDiag = document.getElementById('menu-diagnostics');
         const menuFac = document.getElementById('menu-faculties-mgmt');
         const quickAddBtn = document.getElementById('btn-quick-add-student');
+        const quickAddTeacherBtn = document.getElementById('btn-quick-add-teacher');
+        const showAddExamBtn = document.getElementById('btn-show-add-exam');
 
         if (role === 'ROLE_ADMIN') {
             if (menuAdd) menuAdd.classList.remove('d-none');
+            if (menuAddTeacher) menuAddTeacher.classList.remove('d-none');
+            if (menuExamDept) menuExamDept.classList.remove('d-none');
             if (menuDiag) menuDiag.classList.remove('d-none');
             if (menuFac) menuFac.classList.remove('d-none');
             if (quickAddBtn) quickAddBtn.classList.remove('d-none');
+            if (quickAddTeacherBtn) quickAddTeacherBtn.classList.remove('d-none');
+            if (showAddExamBtn) showAddExamBtn.classList.remove('d-none');
             STATE.directory.adminAccess = true;
+            STATE.directoryTeachers.adminAccess = true;
         } else { // ROLE_STUDENT
             if (menuAdd) menuAdd.classList.add('d-none');
+            if (menuAddTeacher) menuAddTeacher.classList.add('d-none');
+            if (menuExamDept) menuExamDept.classList.add('d-none');
             if (menuDiag) menuDiag.classList.add('d-none');
             if (menuFac) menuFac.classList.add('d-none');
             if (quickAddBtn) quickAddBtn.classList.add('d-none');
+            if (quickAddTeacherBtn) quickAddTeacherBtn.classList.add('d-none');
+            if (showAddExamBtn) showAddExamBtn.classList.add('d-none');
             STATE.directory.adminAccess = false;
+            STATE.directoryTeachers.adminAccess = false;
             
             // If active tab is admin-only, redirect to dashboard
-            if (STATE.activeTab === 'add-student' || STATE.activeTab === 'diagnostics' || STATE.activeTab === 'faculties-mgmt') {
+            if (STATE.activeTab === 'add-student' || STATE.activeTab === 'add-teacher' || STATE.activeTab === 'exam-dept' || STATE.activeTab === 'diagnostics' || STATE.activeTab === 'faculties-mgmt') {
                 switchTab('dashboard');
             }
         }
@@ -155,9 +186,12 @@ function initAppEvents() {
 
     // Load directory actions
     initDirectoryControls();
+    initTeacherDirectoryControls();
+    initExamDepartmentControls();
 
     // Load Form Wizards
     initFormWizards();
+    initTeacherFormWizards();
 
     // Interactive dashboard stats cards
     initStatsCardsClickEvents();
@@ -293,6 +327,12 @@ function switchTab(tabName) {
                 animateChart();
             } else if (tabName === 'students-list') {
                 loadStudentDirectory();
+            } else if (tabName === 'teachers-list') {
+                loadTeacherDirectory();
+            } else if (tabName === 'add-teacher') {
+                resetAddTeacherForm();
+            } else if (tabName === 'exam-dept') {
+                loadExamDepartment();
             } else if (tabName === 'faculties-mgmt') {
                 loadFacultyPageData();
             }
@@ -1122,6 +1162,15 @@ function showStudentDetails(id) {
 
             // Bind actions buttons
             document.getElementById('btn-details-back').onclick = () => switchTab('students-list');
+
+            // Bind marksheet PDF download
+            const pdfBtn = document.getElementById('btn-download-marksheet-pdf');
+            if (pdfBtn) {
+                pdfBtn.onclick = () => {
+                    window.open(`/api/students/${student.id}/marksheet/pdf`, '_blank');
+                };
+            }
+
             const editDetailsBtn = document.getElementById('btn-details-edit');
             if (editDetailsBtn) {
                 if (STATE.directory.adminAccess) {
@@ -1131,6 +1180,9 @@ function showStudentDetails(id) {
                     editDetailsBtn.classList.add('d-none');
                 }
             }
+
+            // Load student marksheet details
+            loadStudentMarksheetDetails(student.id);
 
             switchTab('student-details');
         })
@@ -1528,4 +1580,1056 @@ function loadFacultyPageData() {
         `;
         container.appendChild(col);
     });
+}
+
+/* =========================================================================
+   Exam Department Controls, Scheduling, Grading Ledger
+   ========================================================================= */
+function initExamDepartmentControls() {
+    document.querySelectorAll('.exam-pane-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.exam-pane-tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const targetPane = btn.getAttribute('data-pane');
+            document.querySelectorAll('.exam-pane-content').forEach(p => p.classList.add('d-none'));
+            document.getElementById(`exam-pane-${targetPane}`).classList.remove('d-none');
+
+            if (targetPane === 'schedule') {
+                loadExamDepartment();
+            } else if (targetPane === 'grades') {
+                loadExamDropdownOptions();
+            }
+        });
+    });
+
+    const showAddExamBtn = document.getElementById('btn-show-add-exam');
+    const formContainer = document.getElementById('exam-form-container');
+    const cancelFormBtn = document.getElementById('btn-cancel-exam-form');
+
+    if (showAddExamBtn && formContainer) {
+        showAddExamBtn.addEventListener('click', () => {
+            document.getElementById('exam-schedule-form').reset();
+            document.getElementById('form-exam-id').value = '';
+            document.getElementById('exam-form-title').innerHTML = '<i class="bi bi-plus-circle me-2 text-info"></i>Schedule New Exam';
+            formContainer.classList.remove('d-none');
+            showAddExamBtn.classList.add('d-none');
+        });
+    }
+
+    if (cancelFormBtn && formContainer && showAddExamBtn) {
+        cancelFormBtn.addEventListener('click', () => {
+            formContainer.classList.add('d-none');
+            showAddExamBtn.classList.remove('d-none');
+        });
+    }
+
+    const examForm = document.getElementById('exam-schedule-form');
+    if (examForm) {
+        examForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            submitExamScheduleForm();
+        });
+    }
+
+    const examSelect = document.getElementById('grade-exam-select');
+    if (examSelect) {
+        examSelect.addEventListener('change', () => {
+            const selectedExamId = examSelect.value;
+            if (selectedExamId) {
+                loadGradeLedger(selectedExamId);
+            }
+        });
+    }
+
+    const saveLedgerBtn = document.getElementById('btn-save-ledger');
+    if (saveLedgerBtn) {
+        saveLedgerBtn.addEventListener('click', () => {
+            submitGradeLedger();
+        });
+    }
+}
+
+function loadExamDepartment() {
+    authorizedFetch('/api/exams')
+        .then(res => res.json())
+        .then(data => {
+            STATE.exams = data;
+            renderExamSchedule();
+        })
+        .catch(err => {
+            logError("Failed to fetch exams", err);
+            showToast("Could not retrieve exam schedules.", "error");
+        });
+}
+
+function renderExamSchedule() {
+    const tbody = document.getElementById('exam-schedule-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (STATE.exams.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No scheduled exams found.</td></tr>`;
+        return;
+    }
+
+    STATE.exams.forEach(exam => {
+        const tr = document.createElement('tr');
+        const examDateStr = new Date(exam.examDate).toLocaleDateString();
+
+        let actionButtons = '';
+        if (STATE.role === 'ROLE_ADMIN') {
+            actionButtons = `
+                <div class="d-flex gap-1">
+                    <button class="btn btn-dark btn-sm border-secondary text-secondary btn-edit-exam" data-id="${exam.id}" title="Edit Schedule"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-dark btn-sm border-secondary text-danger btn-delete-exam" data-id="${exam.id}" title="Delete Schedule"><i class="bi bi-trash"></i></button>
+                </div>
+            `;
+        } else {
+            actionButtons = `<span class="text-muted small">Read-Only</span>`;
+        }
+
+        tr.innerHTML = `
+            <td><strong class="text-white">${exam.examName}</strong></td>
+            <td><span class="badge bg-dark border border-secondary text-secondary">${exam.courseName}</span></td>
+            <td class="text-info">${examDateStr}</td>
+            <td><code class="text-secondary">${exam.room}</code></td>
+            <td class="text-white fw-bold">${exam.maxMarks}</td>
+            <td>${actionButtons}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('.btn-edit-exam').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            showEditExamForm(id);
+        });
+    });
+
+    tbody.querySelectorAll('.btn-delete-exam').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            deleteExam(id);
+        });
+    });
+}
+
+function showEditExamForm(id) {
+    const exam = STATE.exams.find(e => String(e.id) === String(id));
+    if (!exam) return;
+
+    document.getElementById('form-exam-id').value = exam.id;
+    document.getElementById('form-exam-name').value = exam.examName;
+    document.getElementById('form-exam-course').value = exam.courseName;
+    document.getElementById('form-exam-date').value = exam.examDate;
+    document.getElementById('form-exam-room').value = exam.room;
+    document.getElementById('form-exam-max-marks').value = exam.maxMarks;
+
+    document.getElementById('exam-form-title').innerHTML = '<i class="bi bi-pencil-square me-2 text-info"></i>Modify Scheduled Exam';
+    document.getElementById('exam-form-container').classList.remove('d-none');
+    document.getElementById('btn-show-add-exam').classList.add('d-none');
+
+    document.getElementById('exam-form-container').scrollIntoView({ behavior: 'smooth' });
+}
+
+function submitExamScheduleForm() {
+    const id = document.getElementById('form-exam-id').value;
+    const payload = {
+        examName: document.getElementById('form-exam-name').value.trim(),
+        courseName: document.getElementById('form-exam-course').value.trim(),
+        examDate: document.getElementById('form-exam-date').value,
+        room: document.getElementById('form-exam-room').value.trim(),
+        maxMarks: parseInt(document.getElementById('form-exam-max-marks').value)
+    };
+
+    const url = id ? `/api/exams/${id}` : '/api/exams';
+    const method = id ? 'PUT' : 'POST';
+
+    authorizedFetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => {
+        if (!res.ok) return res.json().then(err => { throw err; });
+        return res.json();
+    })
+    .then(() => {
+        showToast(id ? "Exam schedule updated successfully" : "New exam scheduled successfully", "success");
+        document.getElementById('exam-form-container').classList.add('d-none');
+        document.getElementById('btn-show-add-exam').classList.remove('d-none');
+        loadExamDepartment();
+    })
+    .catch(err => {
+        showToast(err.message || "Failed to schedule exam.", "error");
+    });
+}
+
+function deleteExam(id) {
+    if (confirm("Are you sure you want to delete this scheduled exam? All grades registered under it will be affected.")) {
+        authorizedFetch(`/api/exams/${id}`, { method: 'DELETE' })
+            .then(res => {
+                if (res.ok) {
+                    showToast("Scheduled exam deleted.", "success");
+                    loadExamDepartment();
+                } else {
+                    showToast("Could not delete scheduled exam.", "error");
+                }
+            })
+            .catch(() => showToast("Could not delete scheduled exam.", "error"));
+    }
+}
+
+function loadExamDropdownOptions() {
+    const select = document.getElementById('grade-exam-select');
+    if (!select) return;
+
+    select.innerHTML = '<option value="" disabled selected>-- Select Exam --</option>';
+
+    authorizedFetch('/api/exams')
+        .then(res => res.json())
+        .then(examsList => {
+            examsList.forEach(exam => {
+                const opt = document.createElement('option');
+                opt.value = exam.id;
+                opt.textContent = `${exam.examName} (${exam.courseName})`;
+                select.appendChild(opt);
+            });
+        })
+        .catch(err => logError("Failed to build exam dropdown", err));
+}
+
+function loadGradeLedger(examId) {
+    STATE.currentExamIdForLedger = examId;
+
+    const exam = STATE.exams.find(e => String(e.id) === String(examId)) || { maxMarks: 100 };
+    STATE.currentExamMaxMarks = exam.maxMarks;
+
+    document.getElementById('ledger-subtitle-text').textContent = `Maximum Marks Allowed: ${exam.maxMarks}`;
+    document.getElementById('ledger-title-text').textContent = `${exam.examName} Grade Entry Ledger`;
+
+    Promise.all([
+        authorizedFetch(`/api/exams/${examId}/results`).then(res => res.json()),
+        authorizedFetch('/api/students').then(res => res.json())
+    ])
+    .then(([resultsList, studentsList]) => {
+        const tbody = document.getElementById('exam-grades-tbody');
+        tbody.innerHTML = '';
+
+        if (studentsList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">No active students registered in the system.</td></tr>`;
+            return;
+        }
+
+        studentsList.forEach(student => {
+            const resultEntry = resultsList.find(r => String(r.studentId) === String(student.id)) || { marksObtained: 0, grade: 'F' };
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+                <td><code class="text-info">${student.studentNumber}</code></td>
+                <td><strong class="text-white">${student.firstName} ${student.lastName}</strong></td>
+                <td>
+                    <div class="custom-form-group m-0">
+                        <input type="number" step="0.5" class="custom-form-control py-1 px-2 mark-input" 
+                               data-student-id="${student.id}" 
+                               value="${resultEntry.marksObtained}" 
+                               min="0" max="${exam.maxMarks}" 
+                               style="width: 100px; display: inline-block;">
+                        <span class="text-muted ms-1">/ ${exam.maxMarks}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge bg-dark border border-secondary text-secondary grade-badge" id="grade-badge-${student.id}">
+                        ${resultEntry.grade}
+                    </span>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            const input = tr.querySelector('.mark-input');
+            input.addEventListener('input', () => {
+                let marks = parseFloat(input.value) || 0;
+                if (marks > exam.maxMarks) {
+                    marks = exam.maxMarks;
+                    input.value = exam.maxMarks;
+                }
+                if (marks < 0) {
+                    marks = 0;
+                    input.value = 0;
+                }
+                const gradeBadge = document.getElementById(`grade-badge-${student.id}`);
+                if (gradeBadge) {
+                    gradeBadge.textContent = calculateLetterGrade(marks, exam.maxMarks);
+                }
+            });
+        });
+
+        document.getElementById('grade-ledger-empty-state').classList.add('d-none');
+        document.getElementById('grade-entry-ledger-container').classList.remove('d-none');
+    })
+    .catch(() => showToast("Could not load exam grade sheet.", "error"));
+}
+
+function submitGradeLedger() {
+    const examId = STATE.currentExamIdForLedger;
+    if (!examId) return;
+
+    const tbody = document.getElementById('exam-grades-tbody');
+    const inputs = tbody.querySelectorAll('.mark-input');
+
+    const promises = Array.from(inputs).map(input => {
+        const studentId = input.getAttribute('data-student-id');
+        const marks = parseFloat(input.value) || 0;
+        const grade = calculateLetterGrade(marks, STATE.currentExamMaxMarks);
+
+        const payload = {
+            examId: parseInt(examId),
+            studentId: parseInt(studentId),
+            marksObtained: marks,
+            grade: grade
+        };
+
+        return authorizedFetch('/api/exams/results', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+    });
+
+    Promise.all(promises)
+        .then(() => {
+            showToast("Grade sheet saved successfully!", "success");
+            loadGradeLedger(examId);
+        })
+        .catch(() => showToast("Failed to save some grades.", "error"));
+}
+
+function calculateLetterGrade(score, maxMarks) {
+    const pct = (score / maxMarks) * 100;
+    if (pct >= 90) return 'A+';
+    if (pct >= 80) return 'A';
+    if (pct >= 70) return 'B';
+    if (pct >= 60) return 'C';
+    if (pct >= 50) return 'D';
+    return 'F';
+}
+
+/* =========================================================================
+   Teacher Directory Controls, Sorting, Filtering & Rendering
+   ========================================================================= */
+function initTeacherDirectoryControls() {
+    const searchInput = document.getElementById('teacher-search-input');
+    const deptSelect = document.getElementById('teacher-filter-department');
+    const statusSelect = document.getElementById('teacher-filter-status');
+    const clearBtn = document.getElementById('btn-teacher-clear-filters');
+    const refreshBtn = document.getElementById('btn-refresh-teachers');
+    const quickAddBtn = document.getElementById('btn-quick-add-teacher');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(() => {
+            STATE.directoryTeachers.searchQuery = searchInput.value;
+            STATE.directoryTeachers.currentPage = 1;
+            applyTeacherDirectoryFilteringAndRendering();
+        }, 300));
+    }
+
+    if (deptSelect) {
+        deptSelect.addEventListener('change', () => {
+            STATE.directoryTeachers.filterDept = deptSelect.value;
+            STATE.directoryTeachers.currentPage = 1;
+            applyTeacherDirectoryFilteringAndRendering();
+        });
+    }
+
+    if (statusSelect) {
+        statusSelect.addEventListener('change', () => {
+            STATE.directoryTeachers.filterStatus = statusSelect.value;
+            STATE.directoryTeachers.currentPage = 1;
+            loadTeacherDirectory();
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
+            if (deptSelect) deptSelect.value = 'ALL';
+            if (statusSelect) statusSelect.value = 'ACTIVE';
+
+            STATE.directoryTeachers.searchQuery = '';
+            STATE.directoryTeachers.filterDept = 'ALL';
+            STATE.directoryTeachers.filterStatus = 'ACTIVE';
+            STATE.directoryTeachers.currentPage = 1;
+
+            loadTeacherDirectory();
+        });
+    }
+
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            loadTeacherDirectory();
+            showToast("Teacher records refreshed", "success");
+        });
+    }
+
+    if (quickAddBtn) {
+        quickAddBtn.addEventListener('click', () => {
+            switchTab('add-teacher');
+        });
+    }
+
+    // Bind Sorting headers
+    document.querySelectorAll('#view-teachers-list .sort-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const field = header.getAttribute('data-sort');
+            if (STATE.directoryTeachers.sortField === field) {
+                STATE.directoryTeachers.sortOrder = STATE.directoryTeachers.sortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                STATE.directoryTeachers.sortField = field;
+                STATE.directoryTeachers.sortOrder = 'asc';
+            }
+            applyTeacherDirectoryFilteringAndRendering();
+        });
+    });
+}
+
+function loadTeacherDirectory() {
+    const loader = document.getElementById('teachers-table-skeleton');
+    const table = document.getElementById('teachers-table-data');
+    if (!loader || !table) return;
+
+    loader.classList.remove('d-none');
+    table.classList.add('d-none');
+
+    const endpoint = STATE.directoryTeachers.filterStatus === 'DELETED' ? '/api/teachers/deleted' : '/api/teachers';
+
+    authorizedFetch(endpoint)
+        .then(res => res.json())
+        .then(data => {
+            STATE.teachers = data;
+            applyTeacherDirectoryFilteringAndRendering();
+        })
+        .catch(err => {
+            logError("Failed to fetch teachers", err);
+            showToast("Could not retrieve teacher records.", "error");
+        })
+        .finally(() => {
+            loader.classList.add('d-none');
+            table.classList.remove('d-none');
+        });
+}
+
+function applyTeacherDirectoryFilteringAndRendering() {
+    const tbody = document.getElementById('teachers-directory-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    const nameIcon = document.getElementById('sort-icon-teacher-name');
+    const idIcon = document.getElementById('sort-icon-teacher-id');
+    const deptIcon = document.getElementById('sort-icon-teacher-dept');
+
+    if (nameIcon) nameIcon.className = "bi bi-arrow-down-up text-muted";
+    if (idIcon) idIcon.className = "bi bi-arrow-down-up text-muted";
+    if (deptIcon) deptIcon.className = "bi bi-arrow-down-up text-muted";
+
+    const currentIcon = document.getElementById(`sort-icon-teacher-${STATE.directoryTeachers.sortField}`);
+    if (currentIcon) {
+        currentIcon.className = STATE.directoryTeachers.sortOrder === 'asc' ? "bi bi-arrow-up text-info" : "bi bi-arrow-down text-info";
+    }
+
+    let filtered = STATE.teachers.filter(teacher => {
+        const q = STATE.directoryTeachers.searchQuery.toLowerCase().trim();
+        const matchesQuery = q === '' ||
+            teacher.firstName.toLowerCase().includes(q) ||
+            teacher.lastName.toLowerCase().includes(q) ||
+            teacher.teacherNumber.toLowerCase().includes(q) ||
+            teacher.email.toLowerCase().includes(q) ||
+            (teacher.phone && teacher.phone.includes(q));
+
+        const matchesDept = STATE.directoryTeachers.filterDept === 'ALL' ||
+            String(teacher.departmentId) === STATE.directoryTeachers.filterDept;
+
+        return matchesQuery && matchesDept;
+    });
+
+    filtered.sort((a, b) => {
+        let valA = '', valB = '';
+        if (STATE.directoryTeachers.sortField === 'name') {
+            valA = `${a.firstName} ${a.lastName}`.toLowerCase();
+            valB = `${b.firstName} ${b.lastName}`.toLowerCase();
+        } else if (STATE.directoryTeachers.sortField === 'id') {
+            valA = a.teacherNumber.toLowerCase();
+            valB = b.teacherNumber.toLowerCase();
+        } else if (STATE.directoryTeachers.sortField === 'dept') {
+            valA = (a.departmentName || '').toLowerCase();
+            valB = (b.departmentName || '').toLowerCase();
+        }
+
+        if (valA < valB) return STATE.directoryTeachers.sortOrder === 'asc' ? -1 : 1;
+        if (valA > valB) return STATE.directoryTeachers.sortOrder === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    const countLabel = document.getElementById('teacher-directory-count-text');
+    const isDel = STATE.directoryTeachers.filterStatus === 'DELETED';
+    if (countLabel) {
+        countLabel.textContent = `Showing ${filtered.length} ${isDel ? 'soft-deleted' : 'active'} teacher records`;
+    }
+
+    const totalRecords = filtered.length;
+    const totalPages = Math.ceil(totalRecords / STATE.directoryTeachers.pageSize) || 1;
+
+    if (STATE.directoryTeachers.currentPage > totalPages) STATE.directoryTeachers.currentPage = totalPages;
+    if (STATE.directoryTeachers.currentPage < 1) STATE.directoryTeachers.currentPage = 1;
+
+    const startIndex = (STATE.directoryTeachers.currentPage - 1) * STATE.directoryTeachers.pageSize;
+    const endIndex = Math.min(startIndex + STATE.directoryTeachers.pageSize, totalRecords);
+
+    const paginated = filtered.slice(startIndex, endIndex);
+
+    const infoText = document.getElementById('teacher-pagination-info-text');
+    if (infoText) {
+        infoText.textContent = totalRecords === 0 ? "Showing 0 to 0 of 0 records" : `Showing ${startIndex + 1} to ${endIndex} of ${totalRecords} records`;
+    }
+
+    renderTeacherPaginationControls(totalPages);
+
+    if (paginated.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No matching records found.</td></tr>`;
+        return;
+    }
+
+    paginated.forEach(teacher => {
+        const tr = document.createElement('tr');
+        const isSoftDeleted = teacher.deletedAt !== null;
+        if (isSoftDeleted) tr.className = 'row-deleted';
+
+        const avatar = teacher.photoPath || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=50';
+        
+        let statusBadge = `<span class="badge-custom green"><i class="bi bi-check-circle-fill me-1"></i>Active</span>`;
+        let actionButtons = '';
+
+        if (STATE.directoryTeachers.adminAccess) {
+            actionButtons = `
+                <div class="d-flex gap-1">
+                    <button class="btn btn-dark btn-sm border-secondary text-secondary btn-view-teacher-details" data-id="${teacher.id}" title="View details"><i class="bi bi-eye"></i></button>
+                    <button class="btn btn-dark btn-sm border-secondary text-secondary btn-edit-teacher" data-id="${teacher.id}" title="Edit Profile"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-dark btn-sm border-secondary text-danger btn-delete-teacher" data-id="${teacher.id}" title="Soft Delete"><i class="bi bi-trash"></i></button>
+                </div>
+            `;
+            if (isSoftDeleted) {
+                statusBadge = `<span class="badge-custom red"><i class="bi bi-x-circle-fill me-1"></i>Deleted</span>`;
+                actionButtons = `
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-dark btn-sm border-secondary text-secondary" disabled><i class="bi bi-eye"></i></button>
+                        <button class="btn btn-dark btn-sm border-secondary text-secondary" disabled><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-success btn-sm border-secondary text-white btn-restore-teacher" data-id="${teacher.id}" title="Restore Record"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    </div>
+                `;
+            }
+        } else {
+            actionButtons = `
+                <div class="d-flex gap-1">
+                    <button class="btn btn-dark btn-sm border-secondary text-secondary btn-view-teacher-details" data-id="${teacher.id}" title="View details"><i class="bi bi-eye"></i></button>
+                </div>
+            `;
+            if (isSoftDeleted) {
+                statusBadge = `<span class="badge-custom red"><i class="bi bi-x-circle-fill me-1"></i>Deleted</span>`;
+                actionButtons = `
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-dark btn-sm border-secondary text-secondary" disabled><i class="bi bi-eye"></i></button>
+                    </div>
+                `;
+            }
+        }
+
+        tr.innerHTML = `
+            <td>
+                <div class="avatar-cell">
+                    <img src="${avatar}" alt="Photo" class="rounded-circle border border-secondary" style="width: 32px; height: 32px; object-fit: cover;">
+                    <div>
+                        <span class="text-white fw-bold d-block">${teacher.firstName} ${teacher.lastName}</span>
+                    </div>
+                </div>
+            </td>
+            <td><code class="text-info">${teacher.teacherNumber}</code></td>
+            <td class="text-secondary small">${teacher.email}</td>
+            <td><span class="badge bg-dark border border-secondary text-secondary small">${teacher.departmentName || 'N/A'}</span></td>
+            <td>${statusBadge}</td>
+            <td>${actionButtons}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('.btn-view-teacher-details').forEach(btn => {
+        btn.addEventListener('click', () => showTeacherDetails(btn.getAttribute('data-id')));
+    });
+
+    tbody.querySelectorAll('.btn-edit-teacher').forEach(btn => {
+        btn.addEventListener('click', () => showEditTeacherForm(btn.getAttribute('data-id')));
+    });
+
+    tbody.querySelectorAll('.btn-delete-teacher').forEach(btn => {
+        btn.addEventListener('click', () => deleteTeacher(btn.getAttribute('data-id')));
+    });
+
+    tbody.querySelectorAll('.btn-restore-teacher').forEach(btn => {
+        btn.addEventListener('click', () => restoreTeacher(btn.getAttribute('data-id')));
+    });
+}
+
+function renderTeacherPaginationControls(totalPages) {
+    const container = document.getElementById('teacher-pagination-buttons-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    const prevBtn = document.createElement('button');
+    prevBtn.className = `btn btn-dark btn-sm border-secondary py-1 px-2 ${STATE.directoryTeachers.currentPage === 1 ? 'disabled' : ''}`;
+    prevBtn.innerHTML = '<i class="bi bi-chevron-left"></i>';
+    prevBtn.addEventListener('click', () => {
+        if (STATE.directoryTeachers.currentPage > 1) {
+            STATE.directoryTeachers.currentPage--;
+            applyTeacherDirectoryFilteringAndRendering();
+        }
+    });
+    container.appendChild(prevBtn);
+
+    for (let i = 1; i <= totalPages; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `btn btn-sm border-secondary py-1 px-2 ${STATE.directoryTeachers.currentPage === i ? 'btn-diagnostic' : 'btn-dark text-secondary'}`;
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', () => {
+            STATE.directoryTeachers.currentPage = i;
+            applyTeacherDirectoryFilteringAndRendering();
+        });
+        container.appendChild(pageBtn);
+    }
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = `btn btn-dark btn-sm border-secondary py-1 px-2 ${STATE.directoryTeachers.currentPage === totalPages ? 'disabled' : ''}`;
+    nextBtn.innerHTML = '<i class="bi bi-chevron-right"></i>';
+    nextBtn.addEventListener('click', () => {
+        if (STATE.directoryTeachers.currentPage < totalPages) {
+            STATE.directoryTeachers.currentPage++;
+            applyTeacherDirectoryFilteringAndRendering();
+        }
+    });
+    container.appendChild(nextBtn);
+}
+
+/* =========================================================================
+   Teacher Creation Form Wizard (Sprint 8 Multi-Step)
+   ========================================================================= */
+function initTeacherFormWizards() {
+    const nextBtn = document.getElementById('btn-add-teacher-step-next');
+    const prevBtn = document.getElementById('btn-add-teacher-step-prev');
+    const fileInput = document.getElementById('add-teacher-photo-file');
+    const fileNameSpan = document.getElementById('add-teacher-photo-filename');
+
+    if (fileInput && fileNameSpan) {
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileNameSpan.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`;
+                fileNameSpan.classList.remove('d-none');
+                STATE.addTeacherPhotoData = file;
+            } else {
+                fileNameSpan.classList.add('d-none');
+                STATE.addTeacherPhotoData = null;
+            }
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (STATE.addTeacherStep < 4) {
+                if (validateTeacherStep(STATE.addTeacherStep)) {
+                    STATE.addTeacherStep++;
+                    updateTeacherStepUI();
+                }
+            } else {
+                submitAddTeacherForm();
+            }
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (STATE.addTeacherStep > 1) {
+                STATE.addTeacherStep--;
+                updateTeacherStepUI();
+            }
+        });
+    }
+}
+
+function validateTeacherStep(step) {
+    clearFormErrors();
+    let valid = true;
+
+    if (step === 1) {
+        const fname = document.getElementById('add-teacher-first-name').value.trim();
+        const lname = document.getElementById('add-teacher-last-name').value.trim();
+        const hireDate = document.getElementById('add-teacher-hire-date').value;
+
+        if (fname === '') { showInputError('add-teacher-first-name', 'First name is required'); valid = false; }
+        if (lname === '') { showInputError('add-teacher-last-name', 'Last name is required'); valid = false; }
+        if (hireDate === '') { showInputError('add-teacher-hire-date', 'Hire date is required'); valid = false; }
+    } else if (step === 2) {
+        const email = document.getElementById('add-teacher-email').value.trim();
+        const phone = document.getElementById('add-teacher-phone').value.trim();
+
+        if (email === '') {
+            showInputError('add-teacher-email', 'Email is required');
+            valid = false;
+        } else if (!email.includes('@')) {
+            showInputError('add-teacher-email', 'Please enter a valid email');
+            valid = false;
+        }
+
+        if (phone !== '' && !/^\+?[0-9\-\s]{7,20}$/.test(phone)) {
+            showInputError('add-teacher-phone', 'Please enter a valid phone number (7-20 digits)');
+            valid = false;
+        }
+    } else if (step === 3) {
+        const num = document.getElementById('add-teacher-number').value.trim();
+        const dept = document.getElementById('add-teacher-dept').value;
+
+        if (num === '') {
+            showInputError('add-teacher-number', 'Teacher number is required');
+            valid = false;
+        } else if (!/^TCH-\d{4}-\d{4}$/.test(num)) {
+            showInputError('add-teacher-number', 'Teacher ID must match format TCH-YYYY-NNNN');
+            valid = false;
+        }
+
+        if (!dept) {
+            showInputError('add-teacher-dept', 'Department placement is required');
+            valid = false;
+        }
+    }
+    return valid;
+}
+
+function updateTeacherStepUI() {
+    for (let i = 1; i <= 4; i++) {
+        const sec = document.getElementById(`add-teacher-step-${i}-content`);
+        if (sec) sec.classList.remove('active');
+        
+        const node = document.getElementById(`node-teacher-step-${i}`);
+        if (node) {
+            node.className = 'step-node';
+            if (i < STATE.addTeacherStep) node.classList.add('completed');
+            if (i === STATE.addTeacherStep) node.classList.add('active');
+        }
+    }
+
+    const activeSec = document.getElementById(`add-teacher-step-${STATE.addTeacherStep}-content`);
+    if (activeSec) activeSec.classList.add('active');
+
+    const bar = document.getElementById('add-teacher-step-progress-bar');
+    if (bar) {
+        bar.style.width = `${STATE.addTeacherStep * 25}%`;
+    }
+
+    const prevBtn = document.getElementById('btn-add-teacher-step-prev');
+    if (prevBtn) {
+        prevBtn.disabled = STATE.addTeacherStep === 1;
+    }
+
+    const nextBtn = document.getElementById('btn-add-teacher-step-next');
+    const label = nextBtn.querySelector('span');
+    const icon = document.getElementById('btn-add-teacher-step-icon');
+
+    if (STATE.addTeacherStep === 4) {
+        label.textContent = "Submit Profile";
+        if (icon) icon.className = "bi bi-check-lg ms-1";
+    } else {
+        label.textContent = "Next";
+        if (icon) icon.className = "bi bi-chevron-right ms-1";
+    }
+}
+
+function resetAddTeacherForm() {
+    STATE.addTeacherStep = 1;
+    STATE.addTeacherPhotoData = null;
+    clearFormErrors();
+    updateTeacherStepUI();
+
+    const form = document.getElementById('add-teacher-form');
+    if (form) form.reset();
+
+    const fileNameSpan = document.getElementById('add-teacher-photo-filename');
+    if (fileNameSpan) fileNameSpan.classList.add('d-none');
+}
+
+function submitAddTeacherForm() {
+    const payload = {
+        teacherNumber: document.getElementById('add-teacher-number').value.trim(),
+        firstName: document.getElementById('add-teacher-first-name').value.trim(),
+        lastName: document.getElementById('add-teacher-last-name').value.trim(),
+        email: document.getElementById('add-teacher-email').value.trim(),
+        phone: document.getElementById('add-teacher-phone').value.trim(),
+        hireDate: document.getElementById('add-teacher-hire-date').value,
+        departmentId: parseInt(document.getElementById('add-teacher-dept').value)
+    };
+
+    authorizedFetch('/api/teachers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => {
+        if (!res.ok) {
+            return res.json().then(err => { throw err; });
+        }
+        return res.json();
+    })
+    .then(teacher => {
+        if (STATE.addTeacherPhotoData) {
+            uploadTeacherPhoto(teacher.id, STATE.addTeacherPhotoData);
+        } else {
+            showToast("Teacher registered successfully", "success");
+            switchTab('teachers-list');
+        }
+    })
+    .catch(err => {
+        if (err.details && typeof err.details === 'object') {
+            Object.keys(err.details).forEach(key => {
+                showToast(`Validation error: ${err.details[key]}`, "error");
+            });
+        } else {
+            showToast(err.message || "Failed to register teacher.", "error");
+        }
+    });
+}
+
+function uploadTeacherPhoto(id, file) {
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    authorizedFetch(`/api/teachers/${id}/photo`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Image upload failed");
+        return res.json();
+    })
+    .then(() => {
+        showToast("Teacher and profile photo registered successfully!", "success");
+        switchTab('teachers-list');
+    })
+    .catch(() => {
+        showToast("Teacher registered but profile image upload failed.", "warning");
+        switchTab('teachers-list');
+    });
+}
+
+/* =========================================================================
+   Teacher Details & Profiles (Sprint 10)
+   ========================================================================= */
+function showTeacherDetails(id) {
+    authorizedFetch(`/api/teachers/${id}`)
+        .then(res => res.json())
+        .then(teacher => {
+            const avatar = teacher.photoPath || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150';
+            
+            document.getElementById('teacher-details-avatar').src = avatar;
+            document.getElementById('teacher-details-name').textContent = `${teacher.firstName} ${teacher.lastName}`;
+            document.getElementById('teacher-details-badge-dept').textContent = teacher.departmentName || 'N/A';
+            document.getElementById('teacher-details-id-code').textContent = teacher.teacherNumber;
+            document.getElementById('teacher-details-joined-date').textContent = new Date(teacher.hireDate).toLocaleDateString();
+            document.getElementById('teacher-details-updated-date').textContent = new Date(teacher.updatedAt).toLocaleTimeString();
+            
+            const isSoftDeleted = teacher.deletedAt !== null;
+            document.getElementById('teacher-details-status-badge').innerHTML = isSoftDeleted ? 
+                `<span class="badge-custom red"><i class="bi bi-x-circle-fill me-1"></i>Deleted</span>` : 
+                `<span class="badge-custom green"><i class="bi bi-check-circle-fill me-1"></i>Active</span>`;
+
+            document.getElementById('teacher-details-email').textContent = teacher.email;
+            document.getElementById('teacher-details-phone').textContent = teacher.phone || 'N/A';
+            document.getElementById('teacher-details-dept-name').textContent = teacher.departmentName || 'N/A';
+
+            document.getElementById('btn-teacher-details-back').onclick = () => switchTab('teachers-list');
+            
+            const editBtn = document.getElementById('btn-teacher-details-edit');
+            if (editBtn) {
+                if (STATE.directoryTeachers.adminAccess) {
+                    editBtn.classList.remove('d-none');
+                    editBtn.onclick = () => showEditTeacherForm(teacher.id);
+                } else {
+                    editBtn.classList.add('d-none');
+                }
+            }
+
+            switchTab('teacher-details');
+        })
+        .catch(err => showToast("Could not load teacher profile sheet.", "error"));
+}
+
+/* =========================================================================
+   Teacher Editing Form Controls (Sprint 9)
+   ========================================================================= */
+function showEditTeacherForm(id) {
+    authorizedFetch(`/api/teachers/${id}`)
+        .then(res => res.json())
+        .then(teacher => {
+            document.getElementById('edit-teacher-id').value = teacher.id;
+            document.getElementById('edit-teacher-first-name').value = teacher.firstName;
+            document.getElementById('edit-teacher-last-name').value = teacher.lastName;
+            document.getElementById('edit-teacher-number').value = teacher.teacherNumber;
+            document.getElementById('edit-teacher-dept').value = teacher.departmentId;
+            document.getElementById('edit-teacher-email').value = teacher.email;
+            document.getElementById('edit-teacher-phone').value = teacher.phone || '';
+            document.getElementById('edit-teacher-hire-date').value = teacher.hireDate;
+
+            const avatar = teacher.photoPath || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=75';
+            document.getElementById('edit-teacher-avatar-preview').src = avatar;
+
+            const photoInput = document.getElementById('edit-teacher-photo-file');
+            photoInput.onchange = () => {
+                if (photoInput.files.length > 0) {
+                    const file = photoInput.files[0];
+                    const formData = new FormData();
+                    formData.append('photo', file);
+
+                    authorizedFetch(`/api/teachers/${teacher.id}/photo`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(updated => {
+                        showToast("Profile image updated successfully", "success");
+                        document.getElementById('edit-teacher-avatar-preview').src = updated.photoPath;
+                        loadTeacherDirectory();
+                    })
+                    .catch(() => showToast("Failed to upload image.", "error"));
+                }
+            };
+
+            document.getElementById('btn-edit-teacher-back').onclick = () => switchTab('teachers-list');
+            document.getElementById('btn-edit-teacher-cancel').onclick = () => switchTab('teachers-list');
+
+            document.getElementById('edit-teacher-form').onsubmit = (e) => {
+                e.preventDefault();
+                submitEditTeacherForm(teacher.id);
+            };
+
+            switchTab('edit-teacher');
+        })
+        .catch(() => showToast("Could not retrieve teacher record to edit.", "error"));
+}
+
+function submitEditTeacherForm(id) {
+    const spinner = document.getElementById('edit-teacher-spinner');
+    if (spinner) spinner.classList.remove('d-none');
+
+    const payload = {
+        teacherNumber: document.getElementById('edit-teacher-number').value.trim(),
+        firstName: document.getElementById('edit-teacher-first-name').value.trim(),
+        lastName: document.getElementById('edit-teacher-last-name').value.trim(),
+        email: document.getElementById('edit-teacher-email').value.trim(),
+        phone: document.getElementById('edit-teacher-phone').value.trim(),
+        hireDate: document.getElementById('edit-teacher-hire-date').value,
+        departmentId: parseInt(document.getElementById('edit-teacher-dept').value)
+    };
+
+    authorizedFetch(`/api/teachers/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => {
+        if (!res.ok) {
+            return res.json().then(err => { throw err; });
+        }
+        return res.json();
+    })
+    .then(() => {
+        showToast("Teacher profile updated successfully!", "success");
+        switchTab('teachers-list');
+    })
+    .catch(err => {
+        if (err.details && typeof err.details === 'object') {
+            Object.keys(err.details).forEach(key => {
+                showToast(`Validation error: ${err.details[key]}`, "error");
+            });
+        } else {
+            showToast(err.message || "Failed to update profile.", "error");
+        }
+    })
+    .finally(() => {
+        if (spinner) spinner.classList.add('d-none');
+    });
+}
+
+/* =========================================================================
+   Teacher Soft Deletes & Restorations (Sprint 10)
+   ========================================================================= */
+function deleteTeacher(id) {
+    if (confirm("Are you sure you want to soft delete this teacher's profile?")) {
+        authorizedFetch(`/api/teachers/${id}`, { method: 'DELETE' })
+            .then(res => {
+                if (res.ok) {
+                    showToast("Teacher profile soft-deleted.", "success");
+                    loadTeacherDirectory();
+                } else {
+                    showToast("Failed to delete record.", "error");
+                }
+            })
+            .catch(() => showToast("Failed to delete record.", "error"));
+    }
+}
+
+function restoreTeacher(id) {
+    if (confirm("Do you want to restore this teacher's profile back to active status?")) {
+        authorizedFetch(`/api/teachers/${id}/restore`, { method: 'PUT' })
+            .then(res => {
+                if (res.ok) {
+                    showToast("Teacher profile restored successfully!", "success");
+                    loadTeacherDirectory();
+                } else {
+                    showToast("Failed to restore record.", "error");
+                }
+            })
+            .catch(() => showToast("Failed to restore record.", "error"));
+    }
+}
+
+function loadStudentMarksheetDetails(studentId) {
+    const tbody = document.getElementById('details-marksheet-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Loading exam scores...</td></tr>';
+
+    authorizedFetch(`/api/exams/student/${studentId}`)
+        .then(res => res.json())
+        .then(results => {
+            tbody.innerHTML = '';
+            if (results.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No exam results recorded yet.</td></tr>';
+                return;
+            }
+            results.forEach(res => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong class="text-white">${res.examName}</strong></td>
+                    <td><span class="badge bg-dark border border-secondary text-secondary">${res.courseName || 'N/A'}</span></td>
+                    <td class="text-white fw-bold">${res.marksObtained} / ${res.maxMarks}</td>
+                    <td>
+                        <span class="badge bg-dark border border-secondary text-info">
+                            ${res.grade}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(() => {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Failed to load marksheet.</td></tr>';
+        });
 }

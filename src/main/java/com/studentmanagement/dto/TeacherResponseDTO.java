@@ -2,6 +2,7 @@ package com.studentmanagement.dto;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,7 +17,7 @@ public class TeacherResponseDTO {
     private String lastName;
     private String email;
     private String phone;
-    private String specialization;
+    private LocalDate hireDate;
     
     // Relation attributes
     private Long departmentId;

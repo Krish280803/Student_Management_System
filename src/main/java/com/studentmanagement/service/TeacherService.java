@@ -17,6 +17,8 @@ public interface TeacherService {
 
     List<TeacherResponseDTO> getAllTeachers();
 
+    List<TeacherResponseDTO> getTeachersByLastName(String lastName);
+
     List<TeacherResponseDTO> getTeachersByDepartment(Long departmentId);
 
     TeacherResponseDTO updateTeacher(Long id, TeacherRequestDTO request);

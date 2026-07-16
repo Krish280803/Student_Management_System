@@ -4,7 +4,7 @@ import com.studentmanagement.dto.TeacherRequestDTO;
 import com.studentmanagement.dto.TeacherResponseDTO;
 import com.studentmanagement.entity.Department;
 import com.studentmanagement.entity.Teacher;
-import com.studentmanagement.exception.DuplicateTeacherException;
+import com.studentmanagement.exception.DuplicateStudentException;
 import com.studentmanagement.exception.ResourceNotFoundException;
 import com.studentmanagement.repository.DepartmentRepository;
 import com.studentmanagement.repository.TeacherRepository;
@@ -34,24 +34,21 @@ public class TeacherServiceImpl implements TeacherService {
     public TeacherResponseDTO createTeacher(TeacherRequestDTO request) {
         log.info("Attempting to register a new teacher with registration number: {}", request.getTeacherNumber());
 
-        // 1. Business Validation: Check for duplicates
         if (teacherRepository.existsByTeacherNumber(request.getTeacherNumber())) {
             log.warn("Teacher registration number already exists: {}", request.getTeacherNumber());
-            throw new DuplicateTeacherException("Teacher number " + request.getTeacherNumber() + " is already registered.");
+            throw new DuplicateStudentException("Teacher number " + request.getTeacherNumber() + " is already registered.");
         }
         if (teacherRepository.existsByEmail(request.getEmail())) {
             log.warn("Teacher email address already exists: {}", request.getEmail());
-            throw new DuplicateTeacherException("Email address " + request.getEmail() + " is already registered.");
+            throw new DuplicateStudentException("Email address " + request.getEmail() + " is already registered.");
         }
 
-        // 2. Fetch parent Department
         Department department = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> {
                     log.warn("Department ID not found: {}", request.getDepartmentId());
                     return new ResourceNotFoundException("Department with ID " + request.getDepartmentId() + " not found.");
                 });
 
-        // 3. Map & Save
         Teacher teacher = TeacherMapper.toEntity(request, department);
         Teacher savedTeacher = teacherRepository.save(teacher);
 
@@ -105,10 +102,17 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
+    public List<TeacherResponseDTO> getTeachersByLastName(String lastName) {
+        log.debug("Fetching teachers matching last name keyword: {}", lastName);
+        return teacherRepository.findByLastNameContainingIgnoreCase(lastName).stream()
+                .map(TeacherMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<TeacherResponseDTO> getTeachersByDepartment(Long departmentId) {
         log.debug("Fetching teachers registered under department ID: {}", departmentId);
         
-        // Check department exists
         if (!departmentRepository.existsById(departmentId)) {
             log.warn("Department ID not found: {}", departmentId);
             throw new ResourceNotFoundException("Department with ID " + departmentId + " not found.");
@@ -125,35 +129,30 @@ public class TeacherServiceImpl implements TeacherService {
     public TeacherResponseDTO updateTeacher(Long id, TeacherRequestDTO request) {
         log.info("Attempting to update teacher profile with database ID: {}", id);
 
-        // 1. Fetch target teacher
         Teacher teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Teacher to update with ID {} not found", id);
                     return new ResourceNotFoundException("Teacher with ID " + id + " not found.");
                 });
 
-        // 2. Validate email changes for duplicates
         if (!teacher.getEmail().equalsIgnoreCase(request.getEmail()) && 
                 teacherRepository.existsByEmail(request.getEmail())) {
             log.warn("Cannot update email. New email address already exists: {}", request.getEmail());
-            throw new DuplicateTeacherException("Email address " + request.getEmail() + " is already registered.");
+            throw new DuplicateStudentException("Email address " + request.getEmail() + " is already registered.");
         }
 
-        // 3. Validate teacher number changes for duplicates
         if (!teacher.getTeacherNumber().equalsIgnoreCase(request.getTeacherNumber()) && 
                 teacherRepository.existsByTeacherNumber(request.getTeacherNumber())) {
             log.warn("Cannot update registration number. New number already exists: {}", request.getTeacherNumber());
-            throw new DuplicateTeacherException("Teacher number " + request.getTeacherNumber() + " is already registered.");
+            throw new DuplicateStudentException("Teacher number " + request.getTeacherNumber() + " is already registered.");
         }
 
-        // 4. Fetch department
         Department department = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> {
                     log.warn("Department ID not found: {}", request.getDepartmentId());
                     return new ResourceNotFoundException("Department with ID " + request.getDepartmentId() + " not found.");
                 });
 
-        // 5. Update Entity & Save
         TeacherMapper.updateEntity(teacher, request, department);
         Teacher updatedTeacher = teacherRepository.save(teacher);
 
@@ -167,7 +166,6 @@ public class TeacherServiceImpl implements TeacherService {
     public void deleteTeacher(Long id) {
         log.info("Attempting to delete teacher with ID: {}", id);
         
-        // Verify teacher exists before deletion
         Teacher teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Delete aborted. Teacher with ID {} not found", id);
@@ -192,7 +190,6 @@ public class TeacherServiceImpl implements TeacherService {
     public void restoreTeacher(Long id) {
         log.info("Attempting to restore soft-deleted teacher with ID: {}", id);
 
-        // Verify if the teacher exists in the soft-deleted list
         List<Teacher> softDeleted = teacherRepository.findSoftDeletedTeachers();
         boolean exists = softDeleted.stream().anyMatch(t -> t.getId().equals(id));
         

@@ -3,6 +3,8 @@ package com.studentmanagement.dto;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,8 +32,8 @@ public class TeacherRequestDTO {
     @Pattern(regexp = "^$|^\\+?[0-9\\-\\s]{7,20}$", message = "Phone must be a valid number (7-20 digits, optional leading +)")
     private String phone;
 
-    @Size(max = 100, message = "Specialization must not exceed 100 characters")
-    private String specialization;
+    @NotNull(message = "Hire date is required")
+    private LocalDate hireDate;
 
     @NotNull(message = "Department ID is required")
     private Long departmentId;

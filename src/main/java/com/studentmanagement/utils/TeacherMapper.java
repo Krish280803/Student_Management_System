@@ -7,9 +7,6 @@ import com.studentmanagement.entity.Teacher;
 
 public class TeacherMapper {
 
-    /**
-     * Map request DTO and parent department entity to database Teacher entity.
-     */
     public static Teacher toEntity(TeacherRequestDTO dto, Department department) {
         if (dto == null) {
             return null;
@@ -21,14 +18,11 @@ public class TeacherMapper {
                 .lastName(dto.getLastName())
                 .email(dto.getEmail())
                 .phone(dto.getPhone())
-                .specialization(dto.getSpecialization())
+                .hireDate(dto.getHireDate())
                 .department(department)
                 .build();
     }
 
-    /**
-     * Update an existing Teacher entity with fields from request DTO and new department.
-     */
     public static void updateEntity(Teacher teacher, TeacherRequestDTO dto, Department department) {
         if (dto == null || teacher == null) {
             return;
@@ -39,13 +33,10 @@ public class TeacherMapper {
         teacher.setLastName(dto.getLastName());
         teacher.setEmail(dto.getEmail());
         teacher.setPhone(dto.getPhone());
-        teacher.setSpecialization(dto.getSpecialization());
+        teacher.setHireDate(dto.getHireDate());
         teacher.setDepartment(department);
     }
 
-    /**
-     * Map database Teacher entity to output response DTO.
-     */
     public static TeacherResponseDTO toResponseDTO(Teacher teacher) {
         if (teacher == null) {
             return null;
@@ -58,13 +49,12 @@ public class TeacherMapper {
                 .lastName(teacher.getLastName())
                 .email(teacher.getEmail())
                 .phone(teacher.getPhone())
-                .specialization(teacher.getSpecialization())
+                .hireDate(teacher.getHireDate())
                 .photoPath(teacher.getPhotoPath())
                 .createdAt(teacher.getCreatedAt())
                 .updatedAt(teacher.getUpdatedAt())
                 .deletedAt(teacher.getDeletedAt());
 
-        // Extract and flatten department information
         if (teacher.getDepartment() != null) {
             builder.departmentId(teacher.getDepartment().getId())
                    .departmentCode(teacher.getDepartment().getCode())

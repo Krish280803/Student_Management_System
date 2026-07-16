@@ -47,21 +47,6 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handle custom DuplicateTeacherException (409 CONFLICT).
-     */
-    @ExceptionHandler(DuplicateTeacherException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateTeacher(DuplicateTeacherException ex) {
-        log.warn("API User error - Teacher duplicate conflict: {}", ex.getMessage());
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.CONFLICT.value())
-                .error(HttpStatus.CONFLICT.getReasonPhrase())
-                .message(ex.getMessage())
-                .build();
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-    }
-
-    /**
      * Handle custom ValidationException thrown by services (400 BAD REQUEST).
      */
     @ExceptionHandler(ValidationException.class)

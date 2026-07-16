@@ -149,18 +149,14 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     # =========================================================================
     # PAGE 1: COVER PAGE
     # =========================================================================
-    story.append(Spacer(1, 100))
+    story.append(Spacer(1, 120))
     story.append(Paragraph("STUDENT MANAGEMENT SYSTEM", title_style))
     story.append(Paragraph("Enterprise SaaS Administration & Grading Platform", subtitle_style))
-    story.append(Spacer(1, 60))
+    story.append(Spacer(1, 80))
     story.append(Paragraph("<b>Author:</b> Srikrishna Kulkarni", metadata_style))
-    story.append(Paragraph("<b>Degree:</b> Bachelor of Engineering (B.E.)", metadata_style))
-    story.append(Paragraph("<b>Department:</b> Department of Artificial Intelligence & Machine Learning", metadata_style))
-    story.append(Paragraph("<b>Institution:</b> PDA College of Engineering", metadata_style))
-    story.append(Paragraph("<b>Academic Year:</b> 2025 - 2026", metadata_style))
-    story.append(Paragraph("<b>Version:</b> Version 1.0 (Final Project Submission)", metadata_style))
+    story.append(Paragraph("<b>Version:</b> Version 1.0 (Final Release)", metadata_style))
     story.append(Paragraph("<b>Date:</b> July 16, 2026", metadata_style))
-    story.append(Spacer(1, 40))
+    story.append(Spacer(1, 50))
     story.append(Paragraph("<b>GitHub:</b> https://github.com/Krish280803/Student_Management_System", metadata_style))
     story.append(Paragraph("<b>LinkedIn:</b> https://linkedin.com/in/srikrishna-kulkarni", metadata_style))
     story.append(PageBreak())
@@ -222,7 +218,7 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
         ["Chapter 9", "SaaS Frontend Layout & SPA Fetch Integrations", "Page 24"],
         ["Chapter 10", "Verification, Testing Suite & Quality Assurance", "Page 27"],
         ["Chapter 11", "DevOps Containerization & CI/CD Pipelines", "Page 29"],
-        ["Chapter 12", "Conclusion, References & Citations", "Page 31"]
+        ["Chapter 12", "Conclusion & Project Portfolio Summary", "Page 31"]
     ]
     t_toc = Table(toc_data, colWidths=[80, 340, 80])
     t_toc.setStyle(TableStyle([

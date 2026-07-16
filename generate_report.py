@@ -1106,5 +1106,18 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
     print("PDF build completed successfully.")
 
 if __name__ == "__main__":
-    doc_path = "SMS_Architecture_Project_Report.pdf"
-    build_pdf(doc_path)
+    # Build to root directory
+    build_pdf("SMS_Architecture_Project_Report.pdf")
+    
+    # Build to static resources for web publishing
+    static_dir = "src/main/resources/static"
+    if os.path.exists(static_dir):
+        build_pdf(os.path.join(static_dir, "SMS_Architecture_Project_Report.pdf"))
+        print("PDF published to src/main/resources/static/")
+        
+    # Build to target classes for live reload serving
+    target_dir = "target/classes/static"
+    if os.path.exists(target_dir):
+        build_pdf(os.path.join(target_dir, "SMS_Architecture_Project_Report.pdf"))
+        print("PDF published to target/classes/static/ (live served)")
+

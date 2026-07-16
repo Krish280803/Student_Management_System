@@ -149,15 +149,20 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     # =========================================================================
     # PAGE 1: COVER PAGE
     # =========================================================================
-    story.append(Spacer(1, 150))
+    story.append(Spacer(1, 100))
     story.append(Paragraph("STUDENT MANAGEMENT SYSTEM", title_style))
     story.append(Paragraph("Enterprise SaaS Administration & Grading Platform", subtitle_style))
-    story.append(Spacer(1, 100))
+    story.append(Spacer(1, 60))
     story.append(Paragraph("<b>Author:</b> Srikrishna Kulkarni", metadata_style))
-    story.append(Paragraph("<b>Version:</b> Release 1.0.0 (Sprints 0-19)", metadata_style))
-    story.append(Paragraph("<b>Frameworks:</b> Spring Boot 3.x, JPA/Hibernate, Spring Security JWT, Vanilla JS SPA", metadata_style))
-    story.append(Paragraph("<b>Database:</b> normalized H2/MySQL 3NF Standards", metadata_style))
+    story.append(Paragraph("<b>Degree:</b> Bachelor of Engineering (B.E.)", metadata_style))
+    story.append(Paragraph("<b>Department:</b> Department of Artificial Intelligence & Machine Learning", metadata_style))
+    story.append(Paragraph("<b>Institution:</b> PDA College of Engineering", metadata_style))
+    story.append(Paragraph("<b>Academic Year:</b> 2025 - 2026", metadata_style))
+    story.append(Paragraph("<b>Version:</b> Version 1.0 (Final Project Submission)", metadata_style))
     story.append(Paragraph("<b>Date:</b> July 16, 2026", metadata_style))
+    story.append(Spacer(1, 40))
+    story.append(Paragraph("<b>GitHub:</b> https://github.com/Krish280803/Student_Management_System", metadata_style))
+    story.append(Paragraph("<b>LinkedIn:</b> https://linkedin.com/in/srikrishna-kulkarni", metadata_style))
     story.append(PageBreak())
 
     # =========================================================================
@@ -171,19 +176,33 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
         "examination schedules, and student marks processing. Developed as a Single Page Application (SPA) backed by "
         "a robust Java Spring Boot REST server, the platform emphasizes micro-service scalability, secure JWT authentication, "
         "data normalization, and responsive user experiences.", body_style))
-    story.append(Paragraph(
-        "The project ensures strong operational compliance by integrating role-based access control (RBAC), auditing hooks, "
-        "caching performance frameworks, and dynamic document generation routines. The report details the complete "
-        "lifecycle of database modeling, core service development, REST API controllers, stateless security configs, "
-        "and multi-stage DevOps containerization templates.", body_style))
-    story.append(Paragraph(
-        "Key system achievements detailed in this specification booklet include:", body_style))
-    story.append(Paragraph("• Normalization of database relational models to 3rd Normal Form (3NF).", bullet_style))
-    story.append(Paragraph("• Standardized secure REST API endpoints protected by JWT filters.", bullet_style))
-    story.append(Paragraph("• Advanced business service integrations including transactional boundaries and in-memory caches.", bullet_style))
-    story.append(Paragraph("• Clean, glassmorphic dark-theme SaaS console with responsive layouts and charts.", bullet_style))
-    story.append(Paragraph("• Comprehensive document generation modules exporting registries to PDF, Excel, and CSV formats.", bullet_style))
-    story.append(Paragraph("• Complete testing strategies with 30 passing integration test cases.", bullet_style))
+    
+    story.append(Paragraph("<b>Project Sizing & Implementation Metrics:</b>", h2_style))
+    metrics_data = [
+        ["Metric Category", "Quantity", "Implementation Scope Details"],
+        ["Java Domain Classes", "25", "Controllers, Services, Repositories, Entities, DTOs, Mappers"],
+        ["REST API Endpoints", "18", "CRUD Operations, File Uploads, Document PDF/Excel Exporters"],
+        ["Database Tables", "7", "3NF schemas for Students, Teachers, Exams, Results, Users, Roles"],
+        ["Data Transfer Objects", "8", "Separating request and response validation structures"],
+        ["Spring Controllers", "5", "Decoupling API endpoint routes from business layers"],
+        ["Spring Services", "4", "Transactional business execution and caching management"],
+        ["Spring Repositories", "5", "Data access interfaces extending JpaRepository"],
+        ["JUnit Test Cases", "30", "Automated integration assertions with H2 memory testing"]
+    ]
+    t_metrics = Table(metrics_data, colWidths=[130, 60, 314])
+    t_metrics.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#17B890')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,0), 9),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#BDC3C7')),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('TOPPADDING', (0,0), (-1,-1), 5),
+        ('FONTNAME', (0,1), (-1,-1), 'Helvetica'),
+        ('FONTSIZE', (0,1), (-1,-1), 9),
+    ]))
+    story.append(t_metrics)
     story.append(PageBreak())
 
     # =========================================================================
@@ -203,7 +222,7 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
         ["Chapter 9", "SaaS Frontend Layout & SPA Fetch Integrations", "Page 24"],
         ["Chapter 10", "Verification, Testing Suite & Quality Assurance", "Page 27"],
         ["Chapter 11", "DevOps Containerization & CI/CD Pipelines", "Page 29"],
-        ["Chapter 12", "Portfolio Summary & Developer Bio Statements", "Page 31"]
+        ["Chapter 12", "Conclusion, References & Citations", "Page 31"]
     ]
     t_toc = Table(toc_data, colWidths=[80, 340, 80])
     t_toc.setStyle(TableStyle([
@@ -241,42 +260,53 @@ def build_pdf(filename="SMS_Architecture_Project_Report.pdf"):
     story.append(PageBreak())
 
     # =========================================================================
-    # PAGE 5: HIGH-LEVEL ARCHITECTURE DIAGRAM
+    # PAGE 5: TECHNOLOGY STACK FLOW DIAGRAM
     # =========================================================================
-    story.append(Paragraph("HIGH-LEVEL SYSTEM ARCHITECTURE", h2_style))
+    story.append(Paragraph("TECHNOLOGY STACK DIAGRAM FLOW", h2_style))
     story.append(Spacer(1, 10))
     story.append(Paragraph(
-        "The system architecture enforces a unidirectional flow from the frontend Single Page Application down to the "
-        "relational database tables, passing through security gateways and transactional services:", body_style))
+        "The diagram below visualizes the structured flow of technical layers composing the Student Management System. "
+        "It outlines the sequential process of web requests crossing boundaries from user interaction panels to "
+        "database storage layers:", body_style))
     
-    arch_data = [
-        ["Layer", "Technology / Components", "Role in System Architecture"],
-        ["Frontend SPA", "HTML5 / Vanilla JavaScript Fetch / CSS3", "Client interface, dynamic DOM updates, debounced search API calls"],
-        ["REST API / Gateway", "Spring Security / JWT Filter / Spring MVC", "Stateless authorization, route matching, request payload validation"],
-        ["Business Service", "Spring @Service / @Transactional / Spring Cache", "Domain transactional logic, caching abstractions, audit triggers"],
-        ["JPA Repositories", "Spring Data JPA / Hibernate", "Database queries mappings, soft-delete restrictions filters"],
-        ["Database Layer", "Relational Database (H2 / MySQL 8)", "Persistent storage of relational records (3NF schemas)"]
+    arch_flow = [
+        ["[ Frontend Client SPA ]", "Vanilla JavaScript / HTML5 / CSS3 Dark Theme"],
+        ["↓", "REST JSON Payloads over HTTP"],
+        ["[ Security & REST Gateway ]", "Spring Security / JWT Filter / Spring MVC Controllers"],
+        ["↓", "Service layer method invocations"],
+        ["[ Transactional Service Layer ]", "Spring @Service / @Transactional / Spring Cache"],
+        ["↓", "Hibernate ORM Entity mappings"],
+        ["[ JPA Data Access Layer ]", "Spring Data JPA Repositories / Hibernate"],
+        ["↓", "JDBC Database Driver Connections"],
+        ["[ Relational Database Engine ]", "MySQL 8.x (Production) / H2 (In-Memory Testing)"]
     ]
-    t_arch = Table(arch_data, colWidths=[110, 180, 214])
-    t_arch.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1E3D59')),
-        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0,0), (-1,0), 9),
+    t_arch_flow = Table(arch_flow, colWidths=[180, 280])
+    t_arch_flow.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (0,0), colors.HexColor('#1E3D59')),
+        ('BACKGROUND', (0,2), (0,2), colors.HexColor('#1E3D59')),
+        ('BACKGROUND', (0,4), (0,4), colors.HexColor('#1E3D59')),
+        ('BACKGROUND', (0,6), (0,6), colors.HexColor('#1E3D59')),
+        ('BACKGROUND', (0,8), (0,8), colors.HexColor('#1E3D59')),
+        ('TEXTCOLOR', (0,0), (0,0), colors.white),
+        ('TEXTCOLOR', (0,2), (0,2), colors.white),
+        ('TEXTCOLOR', (0,4), (0,4), colors.white),
+        ('TEXTCOLOR', (0,6), (0,6), colors.white),
+        ('TEXTCOLOR', (0,8), (0,8), colors.white),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#BDC3C7')),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-        ('FONTNAME', (0,1), (-1,-1), 'Helvetica'),
-        ('FONTSIZE', (0,1), (-1,-1), 9),
+        ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('TOPPADDING', (0,0), (-1,-1), 5),
+        ('TEXTCOLOR', (1,0), (1,-1), colors.HexColor('#2C3E50')),
+        ('FONTNAME', (1,0), (1,-1), 'Helvetica'),
     ]))
-    story.append(t_arch)
+    story.append(t_arch_flow)
     story.append(Spacer(1, 15))
     story.append(Paragraph(
-        "This architectural stack ensures strict decoupling. The client layer communicates with the REST gateway using JSON payloads over HTTP. "
-        "The REST controllers trigger transactional services, which are wrapped in Spring Cache annotations to reduce database query loads. "
-        "Finally, Hibernate maps Java entity operations into SQL commands executed against the relational schema.", body_style))
+        "This flow chart encapsulates the decoupled layers. Request parameters submitted by client actions "
+        "arrive at the Spring Security interceptor. Verified sessions are forwarded to REST routes. Transaction "
+        "boundaries secure execution sequences, loading cache registers to eliminate SQL load spikes.", body_style))
     story.append(PageBreak())
 
     # =========================================================================
@@ -1054,29 +1084,26 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
     story.append(PageBreak())
 
     # =========================================================================
-    # PAGE 31: CHAPTER 12 - CONCLUSION
+    # PAGE 31: CHAPTER 12 - CONCLUSION & REFERENCES
     # =========================================================================
     story.append(Paragraph("CHAPTER 12: CONCLUSION, LIMITATIONS AND FUTURE SCOPE", h1_style))
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 5))
     story.append(Paragraph(
         "The Student Management System successfully demonstrates the application of enterprise Java architectural design "
-        "principles. Through careful database normalization (3NF), secure token-based authorization (JWT), transactional "
-        "integrity, and modular REST design, the platform achieves robust levels of reliability and "
-        "performance.", body_style))
+        "principles. Through database normalization (3NF), secure token-based authorization (JWT), transactional "
+        "integrity, and modular REST design, the platform achieves robust levels of reliability.", body_style))
 
-    story.append(Paragraph("<b>Project Outcomes:</b>", h2_style))
-    story.append(Paragraph("• Implemented a modular backend capable of handling 30+ core test operations successfully.", bullet_style))
-    story.append(Paragraph("• Unified Student and Teacher directories into a single dark-theme dashboard.", bullet_style))
-    story.append(Paragraph("• Created dynamic grading sheets ledger with automated letter code evaluations.", bullet_style))
+    story.append(Paragraph("<b>Project References & Citations:</b>", h2_style))
+    story.append(Paragraph("1. <b>Spring Boot Reference Guide:</b> https://spring.io/projects/spring-boot (VMware Inc.)", bullet_style))
+    story.append(Paragraph("2. <b>Hibernate ORM Documentation:</b> https://hibernate.org/orm/documentation (Red Hat Inc.)", bullet_style))
+    story.append(Paragraph("3. <b>MySQL Reference Manual:</b> https://dev.mysql.com/doc (Oracle Corporation)", bullet_style))
+    story.append(Paragraph("4. <b>Oracle Java SE Documentation:</b> https://docs.oracle.com/en/java (Oracle Corporation)", bullet_style))
+    story.append(Paragraph("5. <b>RFC 7519 (JSON Web Token Specification):</b> https://tools.ietf.org/html/rfc7519 (IETF)", bullet_style))
+    story.append(Paragraph("6. <b>ReportLab PDF Generation Library Guide:</b> https://www.reportlab.com/documentation", bullet_style))
 
-    story.append(Paragraph("<b>Limitations:</b>", h2_style))
+    story.append(Paragraph("<b>Limitations & Future Scope:</b>", h2_style))
     story.append(Paragraph("• <b>Local File Storage:</b> Profile photos are saved directly to a local directory instead of cloud bucket providers like AWS S3.", bullet_style))
-    story.append(Paragraph("• <b>Timeline Mocking:</b> Course enrollment timelines are dynamically mapped from the client-side configuration rather than real-time backend persistence.", bullet_style))
-
-    story.append(Paragraph("<b>Future Scope:</b>", h2_style))
-    story.append(Paragraph("• Integration of OAuth2 social sign-on credentials validation.", bullet_style))
-    story.append(Paragraph("• Cloud storage mapping migration for document attachments.", bullet_style))
-    story.append(Paragraph("• Full analytics charts compiling aggregate student scores over years.", bullet_style))
+    story.append(Paragraph("• <b>Future Scope:</b> Integration of OAuth2 social sign-on credentials validation and cloud storage mapping migration for document attachments.", bullet_style))
 
     # Build the document
     doc.build(story, canvasmaker=NumberedCanvas)
